@@ -1,0 +1,48 @@
+= RESTful Notes API Guide
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectnums:
+:sectlinks:
+:sectanchors:
+
+[[api]]
+== Account Api
+api 에 관련된 설명을 이곳에 적습니다.
+====
+include::{snippets}/signUp/curl-request.adoc[]
+include::{snippets}/signUp/http-request.adoc[]
+include::{snippets}/signUp/http-response.adoc[]
+include::{snippets}/signUp/httpie-request.adoc[]
+include::{snippets}/signUp/request-body.adoc[]
+include::{snippets}/signUp/response-body.adoc[]
+====
+
+====
+include::{snippets}/get/curl-request.adoc[]
+include::{snippets}/get/http-request.adoc[]
+include::{snippets}/get/http-response.adoc[]
+include::{snippets}/get/httpie-request.adoc[]
+include::{snippets}/get/request-body.adoc[]
+include::{snippets}/get/response-body.adoc[]
+====
+
+====
+include::{snippets}/update/curl-request.adoc[]
+include::{snippets}/update/http-request.adoc[]
+include::{snippets}/update/http-response.adoc[]
+include::{snippets}/update/httpie-request.adoc[]
+include::{snippets}/update/request-body.adoc[]
+include::{snippets}/update/response-body.adoc[]
+====
+
+====
+include::{snippets}/delete/curl-request.adoc[]
+include::{snippets}/delete/http-request.adoc[]
+include::{snippets}/delete/http-response.adoc[]
+include::{snippets}/delete/httpie-request.adoc[]
+include::{snippets}/delete/request-body.adoc[]
+include::{snippets}/delete/response-body.adoc[]
+====
