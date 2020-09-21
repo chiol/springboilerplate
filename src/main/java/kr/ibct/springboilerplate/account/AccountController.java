@@ -1,7 +1,9 @@
 package kr.ibct.springboilerplate.account;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
@@ -92,13 +94,17 @@ public class AccountController {
 
     // Todo AOP or interceptor로 변경하기
     private boolean verifyAccount(Long id, Account account) {
+        if (account == null) {
+            return false;
+        }
         if (account.getRoles().contains(AccountRole.ADMIN)) {
             return true;
         }
         if (account.getId() == id) {
             return true;
+        } else {
+            throw new errors.AccountUnAuthentication("not Authentication");
         }
-        return false;
     }
 
 

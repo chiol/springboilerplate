@@ -54,7 +54,6 @@ public class AccountServiceTests extends BaseTest {
     public void testSaveAndLoadUserById() {
         Account account = accountRepository.findByEmail(testEmail).orElseThrow();
 
-
         UserDetails userDetails = accountService.loadUserById(account.getId());
 
         assertThat(testEmail).isEqualTo(userDetails.getUsername());

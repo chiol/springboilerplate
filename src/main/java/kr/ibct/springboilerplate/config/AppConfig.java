@@ -30,11 +30,6 @@ public class AppConfig {
     private String userPassword;
 
     @Bean
-    public LocalValidatorFactoryBean validator() {
-        return new LocalValidatorFactoryBean();
-    }
-
-    @Bean
     public ApplicationRunner applicationRunner() {
         return new ApplicationRunner() {
             @Autowired

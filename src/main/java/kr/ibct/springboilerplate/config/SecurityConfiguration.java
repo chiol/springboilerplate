@@ -9,7 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -20,6 +22,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(
+        securedEnabled = true,
+        jsr250Enabled = true,
+        prePostEnabled = true
+)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 
@@ -44,7 +51,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .passwordEncoder(passwordEncoder());
     }
 
-    @Bean
+    @Bean(BeanIds.AUTHENTICATION_MANAGER)
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
@@ -52,21 +59,24 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable().exceptionHandling().authenticationEntryPoint(entryPoint)
-                .and()
-                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                    .authorizeRequests()
-                      .antMatchers(HttpMethod.GET,"/api/v1/users").hasRole("ADMIN")
-                        .antMatchers(HttpMethod.GET,"/api/v1/users/**").authenticated()
-                        .antMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
-                        .antMatchers(HttpMethod.PATCH, "/api/v1/users").authenticated()
-                        .antMatchers(HttpMethod.DELETE,"/api/v1/users").authenticated()
-                        .antMatchers("/auth").authenticated()
-                        .antMatchers("/auth/admin").hasRole("ADMIN")
+        http.httpBasic().disable()
+                .csrf().disable()
+                .exceptionHandling().authenticationEntryPoint(entryPoint)
+                    .and()
+                .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    .and()
+                .authorizeRequests()
+                    .antMatchers(HttpMethod.GET,"/api/v1/users").hasRole("ADMIN")
+                    .antMatchers(HttpMethod.GET,"/api/v1/users/**").authenticated()
+                    .antMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+                    .antMatchers(HttpMethod.PATCH, "/api/v1/users").authenticated()
+                    .antMatchers(HttpMethod.DELETE,"/api/v1/users").authenticated()
+                    .antMatchers("/auth").authenticated()
+                    .antMatchers("/auth/admin").hasRole("ADMIN")
                     .anyRequest().permitAll()
-                .and()
-                    .cors().disable();
+                    .and()
+                .cors().disable();
 
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }

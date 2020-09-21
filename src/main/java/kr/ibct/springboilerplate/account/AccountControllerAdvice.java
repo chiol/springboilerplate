@@ -15,7 +15,7 @@ public class AccountControllerAdvice {
     @ResponseBody
     ResponseEntity<?> handleControllerException(Throwable ex) {
         HttpStatus status = HttpStatus.NOT_FOUND;
-        return new ResponseEntity<>(new ErrorResponse(status.value(), ex.getMessage()), status);
+        return ResponseEntity.status(status).body(new ErrorResponse(status.value(), ex.getMessage()));
     }
 
     @ExceptionHandler({errors.AccountExistException.class})

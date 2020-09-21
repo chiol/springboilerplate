@@ -1,6 +1,7 @@
 package kr.ibct.springboilerplate.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.ibct.springboilerplate.account.Account;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
@@ -33,10 +34,10 @@ public class BaseTest {
     protected String userEmail;
     @Value("${myapp.userPassword}")
     protected String userPassword;
+
     @Autowired
     protected MockMvc mockMvc;
     @Autowired
     protected ObjectMapper objectMapper;
-
 
 }

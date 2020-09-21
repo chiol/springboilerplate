@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -28,7 +29,6 @@ public class AccountService implements UserDetailsService {
     PasswordEncoder passwordEncoder;
     @Autowired
     JwtTokenProvider jwtTokenProvider;
-
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -37,6 +37,9 @@ public class AccountService implements UserDetailsService {
             throw new errors.AccountExistException("already exist email " + account1.getEmail());
         });
         account.setPassword(this.passwordEncoder.encode(account.getPassword()));
+        if (account.getRoles() == null) {
+            account.setRoles(Set.of(AccountRole.USER));
+        }
         account.setCreated(LocalDateTime.now());
         account.setUpdated(LocalDateTime.now());
         return this.accountRepository.save(account);
@@ -44,7 +47,7 @@ public class AccountService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Account account = this.accountRepository.findByEmail(email).orElseThrow(() -> new NotFoundException(email));
+        Account account = this.accountRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
         return new AccountAdapter(account);
     }
 
@@ -57,8 +60,9 @@ public class AccountService implements UserDetailsService {
     public void updateAccount(Long id, AccountDto.updateRequest request) {
         Account account = accountRepository.findById(id).orElseThrow(() -> new errors.AccountIdNotFoundException(id.toString()));
         AccountMapper.INSTANCE.updateRequestToAccount(request, account);
+        account.setPassword(this.passwordEncoder.encode(account.getPassword()));
         account.setUpdated(LocalDateTime.now());
-        save(account);
+        accountRepository.save(account);
     }
 
     public void deleteAccount(Long id) {
