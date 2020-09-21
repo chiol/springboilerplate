@@ -9,12 +9,15 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.util.Set;
 
 @Configuration
+@EnableAspectJAutoProxy
 public class AppConfig {
 
     @Value("${myapp.adminEmail}")
@@ -25,6 +28,11 @@ public class AppConfig {
     private String userEmail;
     @Value("${myapp.userPassword}")
     private String userPassword;
+
+    @Bean
+    public LocalValidatorFactoryBean validator() {
+        return new LocalValidatorFactoryBean();
+    }
 
     @Bean
     public ApplicationRunner applicationRunner() {

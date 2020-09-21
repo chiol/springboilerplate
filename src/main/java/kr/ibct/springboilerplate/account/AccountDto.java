@@ -18,19 +18,30 @@ public class AccountDto {
         @NotBlank
         private String password;
     }
+
     @Data
     public static class updateRequest {
         private String password;
     }
+
     @Data
     public static class deleteRequest {
         private String email;
     }
+
     @Data
     public static class accountResponse {
         private Long id;
         private String email;
         private LocalDateTime created;
         private LocalDateTime updated;
+    }
+
+    @Data
+    public static class SignInRequest {
+        @NotBlank
+        private String email;
+        @NotBlank
+        private String password;
     }
 }
