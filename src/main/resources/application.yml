@@ -1,12 +1,13 @@
 spring:
   profiles:
     active: local
-debug: true
+
 ---
+
 server:
   port: 8081
 
-# database 설정
+# jpa 및 database 설정
 spring:
   profiles: local
   datasource:
@@ -23,15 +24,38 @@ spring:
     hibernate:
       ddl-auto: create
 
+
+# 기본 account
 myapp:
   adminEmail: admin@admin.com
   adminPassword: adminPassword
   userEmail: user@user.com
   userPassword: userPassword
 
+# jwt
 app:
   jwtSecret: JwtSuperSecretKey
   jwtExpirationInMs: 604800000
+
+# actuator 설정
+
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: "*"
+
+  info:
+    git:
+      enabled: true
+      mode: full
+
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+
 
 ---
 
@@ -48,3 +72,4 @@ myapp:
 app:
   jwtSecret: JwtSuperSecretKey
   jwtExpirationInMs: 604800000
+

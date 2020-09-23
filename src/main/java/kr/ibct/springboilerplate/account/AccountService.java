@@ -1,13 +1,13 @@
 package kr.ibct.springboilerplate.account;
 
-import kr.ibct.springboilerplate.commons.errors.NotFoundException;
+import kr.ibct.springboilerplate.account.exceptions.AccountExistException;
+import kr.ibct.springboilerplate.account.exceptions.AccountIdNotFoundException;
 import kr.ibct.springboilerplate.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -34,7 +36,7 @@ public class AccountService implements UserDetailsService {
 
     public Account save(Account account) {
         accountRepository.findByEmail(account.getEmail()).ifPresent(account1 -> {
-            throw new errors.AccountExistException("already exist email " + account1.getEmail());
+            throw new AccountExistException("already exist email " + account1.getEmail());
         });
         account.setPassword(this.passwordEncoder.encode(account.getPassword()));
         if (account.getRoles() == null) {
@@ -52,13 +54,13 @@ public class AccountService implements UserDetailsService {
     }
 
     public UserDetails loadUserById(Long id) {
-        Account account = accountRepository.findById(id).orElseThrow(() -> new errors.AccountIdNotFoundException(id.toString()));
+        Account account = accountRepository.findById(id).orElseThrow(() -> new AccountIdNotFoundException(id.toString()));
         return new AccountAdapter(account);
     }
 
 
-    public void updateAccount(Long id, AccountDto.updateRequest request) {
-        Account account = accountRepository.findById(id).orElseThrow(() -> new errors.AccountIdNotFoundException(id.toString()));
+    public void updateAccount(Long id, AccountDto.UpdateRequest request) {
+        Account account = accountRepository.findById(id).orElseThrow(() -> new AccountIdNotFoundException(id.toString()));
         AccountMapper.INSTANCE.updateRequestToAccount(request, account);
         account.setPassword(this.passwordEncoder.encode(account.getPassword()));
         account.setUpdated(LocalDateTime.now());
@@ -66,12 +68,12 @@ public class AccountService implements UserDetailsService {
     }
 
     public void deleteAccount(Long id) {
-        Account account = accountRepository.findById(id).orElseThrow(() -> new errors.AccountIdNotFoundException(id.toString()));
+        Account account = accountRepository.findById(id).orElseThrow(() -> new AccountIdNotFoundException(id.toString()));
         accountRepository.delete(account);
     }
 
-    public AccountDto.accountResponse getAccount(Long id) {
-        Account account = accountRepository.findById(id).orElseThrow(() -> new errors.AccountIdNotFoundException(id.toString()));
+    public AccountDto.GetResponse getAccount(Long id) {
+        Account account = accountRepository.findById(id).orElseThrow(() -> new AccountIdNotFoundException(id.toString()));
         return AccountMapper.INSTANCE.toAccountResponse(account);
     }
 

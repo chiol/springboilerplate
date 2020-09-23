@@ -8,9 +8,9 @@ import org.mapstruct.factory.Mappers;
 public interface AccountMapper {
     AccountMapper INSTANCE = Mappers.getMapper(AccountMapper.class);
 
-    Account signInRequestToAccount(AccountDto.signUpRequest request);
+    Account signInRequestToAccount(AccountDto.SignUpRequest request);
 
-    AccountDto.accountResponse toAccountResponse(Account account);
+    AccountDto.GetResponse toAccountResponse(Account account);
 
-    void updateRequestToAccount(AccountDto.updateRequest request,@MappingTarget Account account);
+    void updateRequestToAccount(AccountDto.UpdateRequest request,@MappingTarget Account account);
 }

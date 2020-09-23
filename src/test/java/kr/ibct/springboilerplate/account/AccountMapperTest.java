@@ -13,7 +13,7 @@ class AccountMapperTest {
     public void mappingTest() {
 
         //given
-        AccountDto.signUpRequest request = new AccountDto.signUpRequest();
+        AccountDto.SignUpRequest request = new AccountDto.SignUpRequest();
         request.setEmail(testEmail);
         request.setPassword(testPassword);
 

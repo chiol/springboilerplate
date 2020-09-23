@@ -1,6 +1,5 @@
 package kr.ibct.springboilerplate.jwt;
 
-import com.sun.security.auth.UserPrincipal;
 import io.jsonwebtoken.*;
 import kr.ibct.springboilerplate.account.AccountAdapter;
 import lombok.extern.slf4j.Slf4j;

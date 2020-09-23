@@ -1,9 +1,9 @@
 package kr.ibct.springboilerplate.account;
 
+import kr.ibct.springboilerplate.commons.ApiResponse;
+import kr.ibct.springboilerplate.jwt.JwtTokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +27,7 @@ public class AccountController {
 
 
     @PostMapping
-    public ResponseEntity<?> signUp(@Valid @RequestBody AccountDto.signUpRequest signUpRequest, Errors errors) {
+    public ResponseEntity<?> signUp(@Valid @RequestBody AccountDto.SignUpRequest signUpRequest, BindingResult errors) {
         if (errors.hasErrors()) {
 
             return ResponseEntity.badRequest().body(errors);
@@ -36,11 +36,14 @@ public class AccountController {
         Account account = AccountMapper.INSTANCE.signInRequestToAccount(signUpRequest);
         accountService.save(account);
 
+        ApiResponse apiResponse = new ApiResponse(true, "create account : " + signUpRequest.getEmail());
+
         UriComponentsBuilder base = ServletUriComponentsBuilder.fromCurrentContextPath();
         MvcUriComponentsBuilder builder = MvcUriComponentsBuilder.relativeTo(base);
-        UriComponents uriComponents = builder.withMethodCall(on(AccountController.class).signUp(signUpRequest, errors)).buildAndExpand(signUpRequest);
+        UriComponents uriComponents = builder.withMethodCall(on(AccountController.class).signUp(signUpRequest, errors)).buildAndExpand(apiResponse);
         URI uri = uriComponents.encode().toUri();
-        return ResponseEntity.created(uri).body(signUpRequest);
+
+        return ResponseEntity.created(uri).body(apiResponse);
     }
 
     @PostMapping("/token")
@@ -49,62 +52,45 @@ public class AccountController {
             return ResponseEntity.badRequest().body(errors);
         }
         String token = accountService.provideToken(request.getEmail(), request.getPassword());
-        return ResponseEntity.ok(token);
+        return ResponseEntity.ok(new JwtTokenResponse(token));
     }
 
     @GetMapping
+    @AccessCheck
     public ResponseEntity<?> getAllAccount() {
         List<Account> allAccount = accountService.getAllAccount();
         return ResponseEntity.ok(allAccount);
     }
 
     @GetMapping("/{id}")
+    @AccessCheck
     public ResponseEntity<?> getAccount(@PathVariable Long id, @CurrentUser Account account) {
-        if (!verifyAccount(id, account)) {
-            return ResponseEntity.badRequest().body("bad Request");
-        }
         return ResponseEntity.ok(accountService.getAccount(id));
     }
 
+
+    // Todo account의 정보를 추가하여 patch와 put 만들기
     @PatchMapping("/{id}")
+    @AccessCheck
     public ResponseEntity<?> updateAccount(@PathVariable Long id,
-                                           @Valid @RequestBody AccountDto.updateRequest request,
+                                           @Valid @RequestBody AccountDto.UpdateRequest request,
                                            @CurrentUser Account account,
                                            BindingResult errors) {
         if (errors.hasErrors()) {
             return ResponseEntity.badRequest().body(errors);
         }
-        if (!verifyAccount(id, account)) {
-            return ResponseEntity.badRequest().body("bad Request");
-        }
         accountService.updateAccount(id, request);
-        return ResponseEntity.ok().body("");
+        return ResponseEntity.ok().body(new ApiResponse(true, "id" + id + "의 정보를 업데이트 했습니다.."));
     }
 
 
     @DeleteMapping("/{id}")
+    @AccessCheck
     public ResponseEntity<?> deleteAccount(@PathVariable Long id, @CurrentUser Account account) {
-        if (!verifyAccount(id, account)) {
-            return ResponseEntity.badRequest().body("bad Request");
-        }
+
         accountService.deleteAccount(id);
-        return ResponseEntity.noContent().build();
-    }
-
-
-    // Todo AOP or interceptor로 변경하기
-    private boolean verifyAccount(Long id, Account account) {
-        if (account == null) {
-            return false;
-        }
-        if (account.getRoles().contains(AccountRole.ADMIN)) {
-            return true;
-        }
-        if (account.getId() == id) {
-            return true;
-        } else {
-            throw new errors.AccountUnAuthentication("not Authentication");
-        }
+        ApiResponse apiResponse = new ApiResponse(true, "id " + id + " 의 계정을 삭제했습니다.");
+        return ResponseEntity.ok(apiResponse);
     }
 
 

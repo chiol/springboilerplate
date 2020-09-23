@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class AccountDto {
 
     @Data
-    public static class signUpRequest {
+    public static class SignUpRequest {
         @NotBlank
         @Size(max = 254)
         @Email
@@ -18,25 +18,6 @@ public class AccountDto {
         @NotBlank
         private String password;
     }
-
-    @Data
-    public static class updateRequest {
-        private String password;
-    }
-
-    @Data
-    public static class deleteRequest {
-        private String email;
-    }
-
-    @Data
-    public static class accountResponse {
-        private Long id;
-        private String email;
-        private LocalDateTime created;
-        private LocalDateTime updated;
-    }
-
     @Data
     public static class SignInRequest {
         @NotBlank
@@ -44,4 +25,23 @@ public class AccountDto {
         @NotBlank
         private String password;
     }
+
+    @Data
+    public static class UpdateRequest {
+        private String password;
+    }
+
+    @Data
+    public static class DeleteRequest {
+        private String email;
+    }
+
+    @Data
+    public static class GetResponse {
+        private Long id;
+        private String email;
+        private LocalDateTime created;
+        private LocalDateTime updated;
+    }
+
 }

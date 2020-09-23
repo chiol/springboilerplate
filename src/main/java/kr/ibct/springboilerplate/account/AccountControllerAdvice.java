@@ -1,28 +1,63 @@
 package kr.ibct.springboilerplate.account;
 
-import kr.ibct.springboilerplate.commons.errors.ErrorResponse;
-import kr.ibct.springboilerplate.commons.errors.NotFoundException;
+import kr.ibct.springboilerplate.account.exceptions.AccountAuthorizationException;
+import kr.ibct.springboilerplate.account.exceptions.AccountExistException;
+import kr.ibct.springboilerplate.account.exceptions.AccountIdNotFoundException;
+import kr.ibct.springboilerplate.commons.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import javax.servlet.http.HttpServletRequest;
 
 @ControllerAdvice(basePackageClasses = AccountController.class)
-public class AccountControllerAdvice {
+public class AccountControllerAdvice extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({UsernameNotFoundException.class, NotFoundException.class})
+    @ExceptionHandler({UsernameNotFoundException.class, AccountIdNotFoundException.class})
     @ResponseBody
-    ResponseEntity<?> handleControllerException(Throwable ex) {
+    ResponseEntity<?> handleControllerException(HttpServletRequest request, Throwable ex) {
         HttpStatus status = HttpStatus.NOT_FOUND;
-        return ResponseEntity.status(status).body(new ErrorResponse(status.value(), ex.getMessage()));
+        return ResponseEntity
+                .status(status)
+                .body(ErrorResponse.builder()
+                        .code(status.value())
+                        .message(ex.getMessage())
+                        .error(status.toString())
+                        .path(request.getRequestURI())
+                        .build()
+                );
     }
 
-    @ExceptionHandler({errors.AccountExistException.class})
+    @ExceptionHandler({AccountExistException.class})
     @ResponseBody
-    ResponseEntity<?> handleAccountExistException(Throwable ex) {
+    ResponseEntity<?> handleAccountExistException(HttpServletRequest request, Throwable ex) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
-        return ResponseEntity.status(status).body(new ErrorResponse(status.value(), ex.getMessage()));
+        return ResponseEntity
+                .status(status)
+                .body(ErrorResponse.builder()
+                        .code(status.value())
+                        .message(ex.getMessage())
+                        .error(status.toString())
+                        .path(request.getRequestURI())
+                        .build()
+                );
+    }
+
+    @ExceptionHandler({AccountAuthorizationException.class})
+    @ResponseBody
+    ResponseEntity<?> handleAccountAuthorizationException(HttpServletRequest request, Throwable ex) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        return ResponseEntity
+                .status(status)
+                .body(ErrorResponse.builder()
+                        .code(status.value())
+                        .message(ex.getMessage())
+                        .error(status.toString())
+                        .path(request.getRequestURI())
+                        .build()
+                );
     }
 
 }

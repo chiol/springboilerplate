@@ -4,4 +4,11 @@ Todo history 정보를 가져오는 서버 구축 (endpoint ip만 바꿔서 가�
 
 Todo rest docs 제대로 구현
 
-Todo resource or event
+Todo resource or event 구현
+
+Todo keycloak
+ - refresh token
+
+Todo authorization
+
+Todo openjdk 1.8 확인 [v]
