@@ -57,8 +57,7 @@ class AccountControllerTestByAdmin extends BaseTest {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(adminEmail,adminPassword)
         );
-        String token = jwtTokenProvider.generateToken(authentication);
-        return token;
+        return jwtTokenProvider.generateAccessToken(authentication);
     }
 
 

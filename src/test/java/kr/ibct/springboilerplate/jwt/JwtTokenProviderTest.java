@@ -40,7 +40,7 @@ class JwtTokenProviderTest extends BaseTest {
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userEmail, userPassword);
         Authentication authentication = authenticationManager.authenticate(token);
-        String s = jwtTokenProvider.generateToken(authentication);
+        String s = jwtTokenProvider.generateAccessToken(authentication);
 
         assertThat(jwtTokenProvider.validateToken(s)).isTrue();
         assertThat(jwtTokenProvider.getUserIdFromJwt(s)).isEqualTo(2L);

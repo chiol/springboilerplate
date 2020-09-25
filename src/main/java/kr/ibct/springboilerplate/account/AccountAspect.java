@@ -14,7 +14,8 @@ import org.springframework.stereotype.Component;
 public class AccountAspect {
 
     @Pointcut("@annotation(kr.ibct.springboilerplate.account.AccessCheck)")
-    private void AccessCheck() {}
+    private void AccessCheck() {
+    }
 
 
     // Controller 의 파라미터 중 Long 타입과 @CurrentUser 의 Account 타입을 확인하여 해당 리소스에 접근할수 있는지(인가)를 확인한다.
@@ -23,7 +24,7 @@ public class AccountAspect {
         Long id = null;
         Account account = null;
         Object[] args = joinPoint.getArgs();
-        for (Object arg: args) {
+        for (Object arg : args) {
             if (arg instanceof Account) {
                 account = (Account) arg;
             }
@@ -40,7 +41,8 @@ public class AccountAspect {
 
         if (!account.getRoles().contains(AccountRole.ADMIN)) {
             if (id != account.getId()) {
-                throw new AccountAuthorizationException("your account does not have authentication for " + id);
+                throw new AccountAuthorizationException(
+                        "your account does not have authentication for " + id);
             }
         }
     }

@@ -37,11 +37,10 @@ ext {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
     implementation "org.mapstruct:mapstruct:1.3.1.Final"
@@ -65,7 +64,13 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 
+    // querydsl
+    compile("com.querydsl:querydsl-core")
+    compile("com.querydsl:querydsl-jpa")
 
+    annotationProcessor("com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jpa") // querydsl JPAAnnotationProcessor 사용 지정
+    annotationProcessor("jakarta.persistence:jakarta.persistence-api") // java.lang.NoClassDefFoundError(javax.annotation.Entity) 발생 대응
+    annotationProcessor("jakarta.annotation:jakarta.annotation-api") // java.lang.NoClassDefFoundError (javax.annotation.Generated) 발생 대응
 }
 test {
     outputs.dir snippetsDir
@@ -82,5 +87,11 @@ compileJava {
             '-Amapstruct.suppressGeneratorTimestamp=true',
             '-Amapstruct.suppressGeneratorVersionInfoComment=true'
     ]
+}
+
+// clean 태스크와 cleanGeneatedDir 태스크 중 취향에 따라서 선택하세요.
+/** clean 태스크 실행시 QClass 삭제 */
+clean {
+    delete file('src/main/generated') // 인텔리제이 Annotation processor 생성물 생성위치
 }
 

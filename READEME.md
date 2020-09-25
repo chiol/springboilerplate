@@ -1,11 +1,89 @@
+# Spring boilerPlate
+## Plugins
+- spring
+    - web
+    - data-jpa
+    - validation
+    - security
+    - actuator
+    - devtools
+    - rest-docs
+- jjwt 
+- mapstruct
+- querydsl
+  
+## Directory structure
+- main
+    - common // 각 도메인에서 공통으로 사용할 것
+    - config // 해당 어플리케이션의 설정 파일
+    - domain1
+        - Domain1 (required)
+        - Domain1Controller (required)
+        - Domain1ControllerAdvice (required)
+        - Domain1Service (required)
+        - Domain1Repository (required)
+        - Domain1Dto (required)
+        - Domain1Mapper (required)
+        - Domain1Aspect (optionally)
+        - exceptions (optionally)
+            - Domain---Exception
+            - ...
+        - and so on...
+- test
+    - common // 테스트에 필요한 공통적인 기능
+    - domain1
 
-## jpa
+\* 폴더는 소문자 파일은 대문자
 
-## web
+## Web
+- WebMvc
+![webMvc](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=http%3A%2F%2Fcfile8.uf.tistory.com%2Fimage%2F99AB22345C03AB4C1D9630)
 
-## spring
+- flow
+    - controller <--(DTO)--> service <--(DTO)--> repository <--(Entity)--> DB
 
-## test
+## Data-JPA
+- JPA (Java Persistence API) 
+- 자바 진영의 ORM(Object-Relational Mapping) 기술 표준 
+- 구현체 
+![jpa](https://gmlwjd9405.github.io/images/inflearn-jpa/implementation-of-jpa.png)
+
+단순 반복 작업을 편하게 만들어줌.
+
+## querydsl
+```groovy
+dependencies {
+    compile("com.querydsl:querydsl-core")
+    compile("com.querydsl:querydsl-jpa")
+
+    annotationProcessor("com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jpa") // querydsl JPAAnnotationProcessor 사용 지정
+    annotationProcessor("jakarta.persistence:jakarta.persistence-api") // java.lang.NoClassDefFoundError(javax.annotation.Entity) 발생 대응 
+    annotationProcessor("jakarta.annotation:jakarta.annotation-api") // java.lang.NoClassDefFoundError (javax.annotation.Generated) 발생 대응 
+}
+```
+쿼리문의 컴파일 단계에서 잡을 수 있음. 
+
+참고: https://kimyhcj.tistory.com/356
+
+## lombok
+
+https://www.projectlombok.org/features/all
+
+## Test
+- 테스트에서 lombok을 사용해야하기 때문에 추가
+
+- 유닛 테스트
+- 테스트를 추가할 때 BaseTest 클래스 상속 (기본 세팅을 위해)
+```java
+@SpringBootTest // 스프링 테스트를 위한 어노테이션
+@AutoConfigureMockMvc // Mvc를 모킹으로 만들기 위한 설정
+@ActiveProfiles("test") // application.yml 설정 중 test profile을 사용
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class) // 테스트의 순서를 위해 사용
+```
+
+참고 https://github.com/keesun/study/blob/master/rest-api-with-spring/src/test/java/me/whiteship/demoinfleanrestapi/common/BaseTest.java
+
+
 
 ## rest docs
 

@@ -38,12 +38,12 @@ class JwtAuthenticationFilterTest extends BaseTest {
         Authentication admin = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(adminEmail, adminPassword)
         );
-        String adminToken = jwtTokenProvider.generateToken(admin);
+        String adminToken = jwtTokenProvider.generateAccessToken(admin);
 
         Authentication user = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userEmail, userPassword)
         );
-        String userToken = jwtTokenProvider.generateToken(user);
+        String userToken = jwtTokenProvider.generateAccessToken(user);
 
         String errorToken = "errorToken";
 

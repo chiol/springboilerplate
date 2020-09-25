@@ -1,18 +1,25 @@
 package kr.ibct.springboilerplate.jwt;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class JwtTokenResponse {
-    private String accessToken;
+
     private String tokenType = "Bearer";
+    private String accessToken;
+    private int accessTokenExpiresInDay;
+    private String refreshToken;
+    private int refreshTokenExpiresInDay;
 
-    @Value("${app.jwtExpirationInMs}")
-    private int expires_in;
-
-
-    public JwtTokenResponse(String accessToken) {
+    public JwtTokenResponse(String accessToken, int accessTokenExpiresInDay,
+            String refreshToken, int refreshTokenExpiresInDay) {
         this.accessToken = accessToken;
+        this.accessTokenExpiresInDay = accessTokenExpiresInDay;
+        this.refreshToken = refreshToken;
+        this.refreshTokenExpiresInDay = refreshTokenExpiresInDay;
     }
 }

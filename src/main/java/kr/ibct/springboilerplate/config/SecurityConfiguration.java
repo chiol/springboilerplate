@@ -3,7 +3,6 @@ package kr.ibct.springboilerplate.config;
 import kr.ibct.springboilerplate.account.AccountService;
 import kr.ibct.springboilerplate.jwt.JwtAuthenticationEntryPoint;
 import kr.ibct.springboilerplate.jwt.JwtAuthenticationFilter;
-import kr.ibct.springboilerplate.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,23 +60,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.httpBasic().disable()
                 .csrf().disable()
+                .cors().disable()
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling().authenticationEntryPoint(entryPoint)
-                    .and()
+            .and()
                 .sessionManagement()
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                    .and()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
                 .authorizeRequests()
-                    .antMatchers(HttpMethod.GET,"/api/v1/users").hasRole("ADMIN")
-                    .antMatchers(HttpMethod.GET,"/api/v1/users/**").authenticated()
-                    .antMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
-                    .antMatchers(HttpMethod.PATCH, "/api/v1/users").authenticated()
-                    .antMatchers(HttpMethod.DELETE,"/api/v1/users").authenticated()
-                    .antMatchers("/auth").authenticated()
-                    .antMatchers("/auth/admin").hasRole("ADMIN")
-                    .anyRequest().permitAll()
-                    .and()
-                .cors().disable();
-
-        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .antMatchers(HttpMethod.GET, "/api/v1/users").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET, "/api/v1/users/**").authenticated()
+                .antMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+                .antMatchers(HttpMethod.PATCH, "/api/v1/users").authenticated()
+                .antMatchers(HttpMethod.DELETE, "/api/v1/users").authenticated()
+                .antMatchers("/auth").authenticated()
+                .antMatchers("/auth/admin").hasRole("ADMIN")
+                .anyRequest().permitAll();
     }
 }

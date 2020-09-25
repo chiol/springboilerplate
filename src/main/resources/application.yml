@@ -2,10 +2,18 @@ spring:
   profiles:
     active: local
 
+# jwt
+jwt:
+  secretKey: JwtSuperSecretKey
+  accessToken:
+    expiresInDay: 7
+  refreshToken:
+    expiresInDay: 30
+
 ---
 
 server:
-  port: 8081
+  port: 8083
 
 # jpa 및 database 설정
 spring:
@@ -32,13 +40,9 @@ myapp:
   userEmail: user@user.com
   userPassword: userPassword
 
-# jwt
-app:
-  jwtSecret: JwtSuperSecretKey
-  jwtExpirationInMs: 604800000
+
 
 # actuator 설정
-
 management:
   endpoints:
     web:
@@ -56,7 +60,6 @@ management:
       enabled: true
       show-details: always
 
-
 ---
 
 spring:
@@ -68,8 +71,4 @@ myapp:
   adminPassword: adminPassword
   userEmail: user@user.com
   userPassword: userPassword
-
-app:
-  jwtSecret: JwtSuperSecretKey
-  jwtExpirationInMs: 604800000
 

@@ -1,7 +1,13 @@
 package kr.ibct.springboilerplate.account;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import kr.ibct.springboilerplate.account.AccountDto.EmailAndPassword;
+import kr.ibct.springboilerplate.account.AccountDto.GrantType;
+import kr.ibct.springboilerplate.account.AccountDto.SignInRequest;
 import kr.ibct.springboilerplate.common.BaseTest;
+import kr.ibct.springboilerplate.jwt.JwtDto.AccessTokenAndRefreshToken;
 import kr.ibct.springboilerplate.jwt.JwtTokenProvider;
+import kr.ibct.springboilerplate.jwt.JwtTokenResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +21,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
@@ -60,8 +67,7 @@ class AccountControllerTestByUser extends BaseTest {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userEmail,userPassword)
         );
-        String token = jwtTokenProvider.generateToken(authentication);
-        return token;
+        return jwtTokenProvider.generateAccessToken(authentication);
     }
 
 
@@ -92,6 +98,72 @@ class AccountControllerTestByUser extends BaseTest {
                 .andExpect(status().isCreated())
                 .andDo(document("signUp"));
     }
+
+    @Test
+    public void testSignIn() throws Exception {
+        // given
+        createUserAccount();
+        SignInRequest request = new SignInRequest();
+        request.setEmail(userEmail);
+        request.setPassword(userPassword);
+        EmailAndPassword emailAndPassword = new EmailAndPassword();
+        emailAndPassword.setEmail(userEmail);
+        emailAndPassword.setPassword(userPassword);
+
+        MvcResult signIn = this.mockMvc.perform(post(BASE_URL + "/token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(emailAndPassword)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("signIn"))
+                .andReturn();
+//        String contentAsString = signIn.getResponse().getContentAsString();
+//        System.out.println(contentAsString);
+    }
+
+    @Test
+    public void testRefreshToken() throws Exception {
+        Account userAccount = createUserAccount();
+        EmailAndPassword emailAndPassword = new EmailAndPassword();
+        emailAndPassword.setEmail(userEmail);
+        emailAndPassword.setPassword(userPassword);
+        AccessTokenAndRefreshToken accessTokenAndRefreshToken = accountService
+                .provideToken(emailAndPassword);
+
+        SignInRequest request = new SignInRequest();
+        request.setEmail(userEmail);
+        request.setPassword(userPassword);
+        request.setGrantType(GrantType.refreshToken);
+        request.setRefreshToken(accessTokenAndRefreshToken.getRefreshToken());
+
+        MvcResult mvcResult = this.mockMvc
+                .perform(post(BASE_URL + "/token").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String contentAsString = mvcResult.getResponse().getContentAsString();
+        JwtTokenResponse jwtTokenResponse = objectMapper
+                .readValue(contentAsString, JwtTokenResponse.class);
+
+        // 사용자 정보와 refresh토큰이 맞지 않는 경우
+        request.setEmail("user@Email.com");
+        this.mockMvc
+                .perform(post(BASE_URL + "/token").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+
+        this.mockMvc.perform(get(BASE_URL + "/" + userAccount.getId())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtTokenResponse.getAccessToken() ))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+    }
+
     @Test
     public void testGet() throws Exception {
         // given
@@ -99,7 +171,7 @@ class AccountControllerTestByUser extends BaseTest {
         String token = getToken();
 
         this.mockMvc.perform(get(BASE_URL + "/" + userAccount.getId())
-                            .header(HttpHeaders.AUTHORIZATION,"Bearer " + token))
+                    .header(HttpHeaders.AUTHORIZATION,"Bearer " + token))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andDo(document("get"));
@@ -116,8 +188,8 @@ class AccountControllerTestByUser extends BaseTest {
         this.mockMvc.perform(
                 patch(BASE_URL+"/"+userAccount.getId())
                         .header(HttpHeaders.AUTHORIZATION,"Bearer " + token)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("update"));
