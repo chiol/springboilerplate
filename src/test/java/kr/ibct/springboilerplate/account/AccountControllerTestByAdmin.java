@@ -15,7 +15,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -53,6 +55,21 @@ class AccountControllerTestByAdmin extends BaseTest {
         accountService.save(account);
         return account;
     }
+
+    public void createAccounts() {
+        int total = 10;
+        List<Account> accounts = new ArrayList<>();
+        for (int i = 0; i < total; i++) {
+            Account account = Account.builder()
+                    .email(userEmail + i)
+                    .password(adminPassword + i)
+                    .roles(Set.of(AccountRole.USER,AccountRole.ADMIN))
+                    .build();
+            accounts.add(account);
+        }
+        accountRepository.saveAll(accounts);
+    }
+
     public String getToken() {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(adminEmail,adminPassword)
@@ -65,34 +82,20 @@ class AccountControllerTestByAdmin extends BaseTest {
     public void setUp(WebApplicationContext webApplicationContext,
                       RestDocumentationContextProvider restDocumentation) {
         accountRepository.deleteAll();
+        createAccounts();
 
         this.mockMvc = MockMvcBuilders
                 .webAppContextSetup(webApplicationContext)
+                .addFilters(new CharacterEncodingFilter("UTF-8", true))
                 .apply(documentationConfiguration(restDocumentation))
                 .apply(springSecurity()) // security 추가
                 .build();
     }
 
-    @Test
-    public void testSignUp() throws Exception {
-        // given
-        AccountDto.SignUpRequest request = new AccountDto.SignUpRequest();
-        request.setEmail("test@Test.com");
-        request.setPassword("testPassword");
-
-        this.mockMvc.perform(post(BASE_URL)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andDo(document("signUp"));
-    }
 
     @Test
     public void testGet() throws Exception {
-        // given
-        Account adminAccount
-                = createAdminAccount();
+        createAdminAccount();
         String token = getToken();
 
         List<Account> allAccount = accountRepository.findAll();
@@ -102,35 +105,92 @@ class AccountControllerTestByAdmin extends BaseTest {
                     .header(HttpHeaders.AUTHORIZATION,"Bearer " + token))
                     .andDo(print())
                     .andExpect(status().isOk())
-                    .andDo(document("get"));
+                    .andDo(document("admin/get"));
         }
 
     }
 
     @Test
-    public void testUpdate() throws Exception {
-        Account userAccount = createAdminAccount();
+    public void testGetAll() throws Exception {
+        createAdminAccount();
+        String token = getToken();
 
-        AccountDto.UpdateRequest request = new AccountDto.UpdateRequest();
-        request.setPassword("123");
 
-        this.mockMvc.perform(patch(BASE_URL+"/"+userAccount.getId())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+        this.mockMvc.perform(get(BASE_URL )
+                .header(HttpHeaders.AUTHORIZATION,"Bearer " + token))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andDo(document("update"));
+                .andDo(document("admin/getAll"));
+
     }
 
     @Test
+    public void testPatch() throws Exception {
+        createAdminAccount();
+        String token = getToken();
+
+        AccountDto.PatchRequest request = new AccountDto.PatchRequest();
+        request.setAddress("newAddress");
+        request.setPhoneNum("newPhoneNum");
+        request.setUsername("newUsername");
+
+        List<Account> allAccount = accountRepository.findAll();
+
+        for (Account account: allAccount) {
+
+            this.mockMvc.perform(patch(BASE_URL+"/"+account.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andDo(document("admin/patch"));
+        }
+
+    }
+
+
+    @Test
+    public void testPut() throws Exception {
+        createAdminAccount();
+        String token = getToken();
+
+        AccountDto.PatchRequest request = new AccountDto.PatchRequest();
+        request.setAddress("newAddress");
+        request.setPhoneNum("newPhoneNum");
+        request.setUsername("newUsername");
+
+        List<Account> allAccount = accountRepository.findAll();
+
+        for (Account account: allAccount) {
+
+            this.mockMvc.perform(patch(BASE_URL+"/"+account.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andDo(document("admin/put"));
+        }
+
+    }
+
+
+    @Test
     public void testDelete() throws Exception {
-        Account userAccount = createAdminAccount();
+        createAdminAccount();
+        String token = getToken();
 
-        this.mockMvc.perform(delete(BASE_URL+"/"+userAccount.getId()))
-                .andDo(print())
-                .andExpect(status().isNoContent())
-                .andDo(document("delete"));
+        List<Account> allAccount = accountRepository.findAll();
 
+        for (Account account : allAccount) {
+            this.mockMvc
+                  .perform(delete(BASE_URL + "/" + account.getId())
+                  .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                  .andDo(print())
+                  .andExpect(status().isOk())
+                  .andDo(document("admin/delete"));
+        }
     }
 
 }

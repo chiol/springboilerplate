@@ -1,6 +1,5 @@
 package kr.ibct.springboilerplate.account;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import kr.ibct.springboilerplate.account.AccountDto.EmailAndPassword;
 import kr.ibct.springboilerplate.account.AccountDto.GrantType;
 import kr.ibct.springboilerplate.account.AccountDto.SignInRequest;
@@ -13,26 +12,27 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 //Todo REST_DOCS 적용하기
@@ -57,15 +57,17 @@ class AccountControllerTestByUser extends BaseTest {
         Account account = Account.builder()
                 .email(userEmail)
                 .password(userPassword)
+                .address("address")
+                .phoneNum("phoneNum")
+                .username("username")
                 .roles(Set.of(AccountRole.USER))
                 .build();
-        accountService.save(account);
-        return account;
+        return accountService.save(account);
     }
 
     public String getToken() {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(userEmail,userPassword)
+                new UsernamePasswordAuthenticationToken(userEmail, userPassword)
         );
         return jwtTokenProvider.generateAccessToken(authentication);
     }
@@ -85,40 +87,25 @@ class AccountControllerTestByUser extends BaseTest {
     }
 
     @Test
-    public void testSignUp() throws Exception {
-        // given
-        AccountDto.SignUpRequest request = new AccountDto.SignUpRequest();
-        request.setEmail("test@Test.com");
-        request.setPassword("testPassword");
-
-        this.mockMvc.perform(post(BASE_URL)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andDo(document("signUp"));
-    }
-
-    @Test
     public void testSignIn() throws Exception {
         // given
         createUserAccount();
-        SignInRequest request = new SignInRequest();
-        request.setEmail(userEmail);
-        request.setPassword(userPassword);
+
         EmailAndPassword emailAndPassword = new EmailAndPassword();
         emailAndPassword.setEmail(userEmail);
         emailAndPassword.setPassword(userPassword);
 
-        MvcResult signIn = this.mockMvc.perform(post(BASE_URL + "/token")
+        this.mockMvc.perform(post(BASE_URL + "/token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(emailAndPassword)))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andDo(document("signIn"))
-                .andReturn();
-//        String contentAsString = signIn.getResponse().getContentAsString();
-//        System.out.println(contentAsString);
+                .andExpect(jsonPath("tokenType").value("Bearer"))
+                .andExpect(jsonPath("accessToken").isString())
+                .andExpect(jsonPath("accessTokenExpiresInDay").isNumber())
+                .andExpect(jsonPath("refreshToken").isString())
+                .andExpect(jsonPath("refreshTokenExpiresInDay").isNumber())
+                .andDo(document("user/token"));
     }
 
     @Test
@@ -136,11 +123,13 @@ class AccountControllerTestByUser extends BaseTest {
         request.setGrantType(GrantType.refreshToken);
         request.setRefreshToken(accessTokenAndRefreshToken.getRefreshToken());
 
+
         MvcResult mvcResult = this.mockMvc
                 .perform(post(BASE_URL + "/token").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
+                .andDo(document("user/givenRefreshToken"))
                 .andReturn();
 
         String contentAsString = mvcResult.getResponse().getContentAsString();
@@ -158,50 +147,157 @@ class AccountControllerTestByUser extends BaseTest {
 
 
         this.mockMvc.perform(get(BASE_URL + "/" + userAccount.getId())
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtTokenResponse.getAccessToken() ))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtTokenResponse.getAccessToken()))
                 .andDo(print())
                 .andExpect(status().isOk());
 
     }
 
     @Test
-    public void testGet() throws Exception {
+    public void testGetSuccess() throws Exception {
         // given
         Account userAccount = createUserAccount();
         String token = getToken();
 
         this.mockMvc.perform(get(BASE_URL + "/" + userAccount.getId())
-                    .header(HttpHeaders.AUTHORIZATION,"Bearer " + token))
-                    .andDo(print())
-                    .andExpect(status().isOk())
-                    .andDo(document("get"));
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("user/get"));
+
     }
 
     @Test
-    public void testUpdate() throws Exception {
+    public void testGetErrorOtherUser() throws Exception {
+        // given
         Account userAccount = createUserAccount();
         String token = getToken();
 
-        AccountDto.UpdateRequest request = new AccountDto.UpdateRequest();
-        request.setPassword("123");
+        this.mockMvc.perform(get(BASE_URL + "/" + userAccount.getId() + 1)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
 
+    @Test
+    public void testPutSuccess() throws Exception {
+        Account userAccount = createUserAccount();
+        String token = getToken();
+
+        AccountDto.PutRequest request = new AccountDto.PutRequest();
+        request.setAddress("newAddress");
+        request.setPhoneNum("newPhoneNum");
+        request.setUsername("newUsername");
+
+        // Success
         this.mockMvc.perform(
-                patch(BASE_URL+"/"+userAccount.getId())
-                        .header(HttpHeaders.AUTHORIZATION,"Bearer " + token)
+                put(BASE_URL + "/" + userAccount.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andDo(document("update"));
+                .andDo(document("user/put"));
 
+        Account updateAccount = accountRepository.findByEmail(userEmail).orElseThrow(() -> new AccountNotFoundException("not Found"));
+        assertThat(updateAccount.getAddress()).isEqualTo("newAddress");
+        assertThat(updateAccount.getPhoneNum()).isEqualTo("newPhoneNum");
+        assertThat(updateAccount.getUsername()).isEqualTo("newUsername");
+    }
+
+    @Test
+    public void testPutErrorOtherUserInformation() throws Exception {
+        Account userAccount = createUserAccount();
+        String token = getToken();
+
+        AccountDto.PutRequest request = new AccountDto.PutRequest();
+        request.setAddress("newAddress");
+        request.setPhoneNum("newPhoneNum");
+        request.setUsername("newUsername");
+
+        // 다른 아이디
         this.mockMvc.perform(
-                patch(BASE_URL + "/" + userAccount.getId() + 1)
-                        .header(HttpHeaders.AUTHORIZATION,"Bearer " + token)
+                put(BASE_URL + "/" + userAccount.getId() + 1)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
+
+        // error
+        request.setUsername(null);
+        this.mockMvc.perform(
+                put(BASE_URL + "/" + userAccount.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
+
+    @Test
+    public void testPutErrorRequestBodyNull() throws Exception {
+        Account userAccount = createUserAccount();
+        String token = getToken();
+
+        AccountDto.PutRequest request = new AccountDto.PutRequest();
+        request.setAddress(null);
+        request.setPhoneNum("newPhoneNum");
+        request.setUsername("newUsername");
+
+        // error
+        request.setUsername(null);
+        this.mockMvc.perform(
+                put(BASE_URL + "/" + userAccount.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testPatchSuccess() throws Exception {
+        Account userAccount = createUserAccount();
+        String token = getToken();
+
+        AccountDto.PatchRequest request = new AccountDto.PatchRequest();
+        request.setAddress("newAddress");
+
+
+        this.mockMvc.perform(
+                patch(BASE_URL + "/" + userAccount.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("user/patch"));
+
+        Account account = accountRepository.findByEmail(userEmail).orElseThrow(() -> new AccountNotFoundException("not found"));
+        assertThat(account.getAddress()).isEqualTo("newAddress");
+        assertThat(account.getPhoneNum()).isEqualTo("phoneNum");
+
+
+    }
+
+    @Test
+    public void testPatchErrorOtherUserRequest() throws Exception {
+        Account userAccount = createUserAccount();
+        String token = getToken();
+
+        AccountDto.PatchRequest request = new AccountDto.PatchRequest();
+        request.setAddress("newAddress");
+
+        this.mockMvc.perform(
+                patch(BASE_URL + "/" + userAccount.getId() + 1)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
 
     @Test
     public void testDelete() throws Exception {
@@ -209,19 +305,19 @@ class AccountControllerTestByUser extends BaseTest {
         String token = getToken();
 
         this.mockMvc.perform(
-                delete(BASE_URL+"/"+userAccount.getId())
-                    .header(HttpHeaders.AUTHORIZATION,"Bearer " + token))
+                delete(BASE_URL + "/" + userAccount.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andDo(document("delete"));
+                .andDo(document("user/delete"));
 
         userAccount = createUserAccount();
         token = getToken();
         this.mockMvc.perform(
-                delete(BASE_URL+"/"+userAccount.getId() + 1)
-                        .header(HttpHeaders.AUTHORIZATION,"Bearer " + token))
+                delete(BASE_URL + "/" + userAccount.getId() + 1)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
 
     }
 

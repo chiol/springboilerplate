@@ -13,15 +13,9 @@ import kr.ibct.springboilerplate.jwt.JwtTokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponents;
@@ -33,7 +27,7 @@ public class AccountController {
 
     @Autowired
     AccountService accountService;
-    // Todo JwtResponse 에 설정값 주입
+    // Todo JwtResponse에 설정값 주입
     @Value("${jwt.accessToken.expiresInDay}")
     private int accessTokenExpiresInDay;
 
@@ -50,10 +44,11 @@ public class AccountController {
         }
 
         Account account = AccountMapper.INSTANCE.signInRequestToAccount(signUpRequest);
-        accountService.save(account);
+        Account newAccount = accountService.save(account);
+
 
         ApiResponse apiResponse = new ApiResponse(true,
-                "create account : " + signUpRequest.getEmail());
+                "create account (" + newAccount.getEmail() + ")");
 
         UriComponentsBuilder base = ServletUriComponentsBuilder.fromCurrentContextPath();
         MvcUriComponentsBuilder builder = MvcUriComponentsBuilder.relativeTo(base);
@@ -74,7 +69,7 @@ public class AccountController {
         if (request.getGrantType() == GrantType.refreshToken) {
             if (request.getRefreshToken() == null) {
                 // Todo: not load refresh token
-                throw new RuntimeException("not load refresh token");
+                throw new RuntimeException("do not have refresh token");
             }
             String accessToken = accountService.provideToken(
                             new EmailAndPassword(request.getEmail(), request.getPassword()),
@@ -101,7 +96,6 @@ public class AccountController {
     }
 
     @GetMapping
-    @AccessCheck
     public ResponseEntity<?> getAllAccount() {
         List<Account> allAccount = accountService.getAllAccount();
         return ResponseEntity.ok(allAccount);
@@ -114,23 +108,33 @@ public class AccountController {
     }
 
 
-    // Todo account의 정보를 추가하여 patch와 put 만들기
     @PatchMapping("/{id}")
-    @AccessCheck
-    public ResponseEntity<?> updateAccount(@PathVariable Long id,
-            @Valid @RequestBody AccountDto.UpdateRequest request,
-            @CurrentUser Account account,
-            BindingResult errors) {
+    @PreAuthorize("#id == #account.id or hasRole('ADMIN')")
+    public ResponseEntity<?> patchAccount(@PathVariable Long id,
+                                          @Valid @RequestBody AccountDto.PatchRequest patchRequest,
+                                          @CurrentUser Account account,
+                                          BindingResult errors) {
         if (errors.hasErrors()) {
             return ResponseEntity.badRequest().body(errors);
         }
-        accountService.updateAccount(id, request);
-        return ResponseEntity.ok().body(new ApiResponse(true, "id" + id + "의 정보를 업데이트 했습니다.."));
+        accountService.patchAccount(patchRequest, account);
+        return ResponseEntity.ok().body(new ApiResponse(true, "id " + id + "의 정보를 업데이트 했습니다."));
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("#id == #account.id or hasRole('ADMIN')")
+    public ResponseEntity<?> putAccount(@PathVariable Long id,
+                                          @Valid @RequestBody AccountDto.PutRequest putRequest,
+                                          @CurrentUser Account account,
+                                          BindingResult errors) {
+        if (errors.hasErrors()) {
+            return ResponseEntity.badRequest().body(errors);
+        }
+        accountService.putAccount(putRequest, account);
+        return ResponseEntity.ok().body(new ApiResponse(true, "id " + id + "의 정보를 업데이트 했습니다."));
+    }
 
     @DeleteMapping("/{id}")
-    @AccessCheck
     public ResponseEntity<?> deleteAccount(@PathVariable Long id, @CurrentUser Account account) {
 
         accountService.deleteAccount(id);

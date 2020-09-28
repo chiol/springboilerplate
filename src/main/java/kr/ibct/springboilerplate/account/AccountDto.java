@@ -1,6 +1,8 @@
 package kr.ibct.springboilerplate.account;
 
 import java.time.LocalDateTime;
+import java.util.Set;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -49,9 +51,21 @@ public class AccountDto {
     }
 
     @Data
-    public static class UpdateRequest {
+    public static class PatchRequest {
+        private String address;
+        private String phoneNum;
+        private String username;
 
-        private String password;
+    }
+
+    @Data
+    public static class PutRequest {
+        @NotNull
+        private String address;
+        @NotNull
+        private String phoneNum;
+        @NotNull
+        private String username;
     }
 
     @Data
@@ -65,6 +79,11 @@ public class AccountDto {
 
         private Long id;
         private String email;
+
+        private String phoneNum;
+        private String address;
+        private String username;
+
         private LocalDateTime created;
         private LocalDateTime updated;
     }

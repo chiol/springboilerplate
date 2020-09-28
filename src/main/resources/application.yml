@@ -1,3 +1,6 @@
+server:
+  port: 8080
+
 spring:
   profiles:
     active: local
@@ -10,65 +13,10 @@ jwt:
   refreshToken:
     expiresInDay: 30
 
----
-
-server:
-  port: 8083
-
-# jpa 및 database 설정
-spring:
-  profiles: local
-  datasource:
-    driver-class-name: org.h2.Driver
-    username: root
-    password: root
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-
-  jpa:
-    hibernate:
-      ddl-auto: create
-
-
-# 기본 account
 myapp:
   adminEmail: admin@admin.com
   adminPassword: adminPassword
   userEmail: user@user.com
   userPassword: userPassword
 
-
-
-# actuator 설정
-management:
-  endpoints:
-    web:
-      base-path: /actuator
-      exposure:
-        include: "*"
-
-  info:
-    git:
-      enabled: true
-      mode: full
-
-  endpoint:
-    health:
-      enabled: true
-      show-details: always
-
----
-
-spring:
-  profiles: test
-
-myapp:
-  name: ibct-boilerplate
-  adminEmail: admin@admin.com
-  adminPassword: adminPassword
-  userEmail: user@user.com
-  userPassword: userPassword
 

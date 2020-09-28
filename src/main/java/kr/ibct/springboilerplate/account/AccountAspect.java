@@ -20,7 +20,7 @@ public class AccountAspect {
 
     // Controller 의 파라미터 중 Long 타입과 @CurrentUser 의 Account 타입을 확인하여 해당 리소스에 접근할수 있는지(인가)를 확인한다.
     @Before("AccessCheck()")
-    public void doAccessCheck(JoinPoint joinPoint) {
+    public Object doAccessCheck(JoinPoint joinPoint) {
         Long id = null;
         Account account = null;
         Object[] args = joinPoint.getArgs();
@@ -45,5 +45,6 @@ public class AccountAspect {
                         "your account does not have authentication for " + id);
             }
         }
+        return joinPoint;
     }
 }

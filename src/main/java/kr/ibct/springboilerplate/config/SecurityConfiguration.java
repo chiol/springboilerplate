@@ -1,5 +1,6 @@
 package kr.ibct.springboilerplate.config;
 
+import kr.ibct.springboilerplate.account.AccountSecurity;
 import kr.ibct.springboilerplate.account.AccountService;
 import kr.ibct.springboilerplate.jwt.JwtAuthenticationEntryPoint;
 import kr.ibct.springboilerplate.jwt.JwtAuthenticationFilter;
@@ -33,6 +34,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     AccountService accountService;
     @Autowired
     JwtAuthenticationEntryPoint entryPoint;
+
+    @Bean
+    public AccountSecurity accountSecurity() {
+        return new AccountSecurity();
+    }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -70,11 +76,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/api/v1/users").hasRole("ADMIN")
                 .antMatchers(HttpMethod.GET, "/api/v1/users/**").authenticated()
-                .antMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
-                .antMatchers(HttpMethod.PATCH, "/api/v1/users").authenticated()
-                .antMatchers(HttpMethod.DELETE, "/api/v1/users").authenticated()
+                .antMatchers(HttpMethod.POST, "/api/v1/users/**").permitAll()
+                .antMatchers(HttpMethod.PATCH, "/api/v1/users/**").authenticated()
+                .antMatchers(HttpMethod.DELETE, "/api/v1/users/{userId}").access("hasRole('ADMIN') or @accountSecurity.check(authentication, #userId)")
                 .antMatchers("/auth").authenticated()
                 .antMatchers("/auth/admin").hasRole("ADMIN")
                 .anyRequest().permitAll();
+        http.headers().frameOptions().sameOrigin();
     }
 }

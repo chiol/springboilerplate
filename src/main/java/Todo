@@ -1,7 +1,3 @@
-Todo eosio 가져오기 action 전송 and 기본적인 테이블 정보
-
-Todo history 정보를 가져오는 서버 구축 (endpoint ip만 바꿔서 가져오기) hasura
-
 Todo rest docs 제대로 구현
 
 Todo resource or event 구현
@@ -10,8 +6,9 @@ Todo keycloak
  - refresh token
 
 Todo authorization
-Todo refresh Token
-Todo paging
+ - 관리자 api와 클라이언트 api를 분리?
+ - aop? security filter? preAuthorization?
 
+Todo refresh Token [v]
 
 Todo openjdk 1.8 확인 [v]

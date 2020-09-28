@@ -14,27 +14,34 @@
   
 ## Directory structure
 - main
-    - common // 각 도메인에서 공통으로 사용할 것
-    - config // 해당 어플리케이션의 설정 파일
-    - domain1
-        - Domain1 (required)
-        - Domain1Controller (required)
-        - Domain1ControllerAdvice (required)
-        - Domain1Service (required)
-        - Domain1Repository (required)
-        - Domain1Dto (required)
-        - Domain1Mapper (required)
-        - Domain1Aspect (optionally)
-        - exceptions (optionally)
-            - Domain---Exception
-            - ...
-        - and so on...
+    - java 
+        - common // 각 도메인에서 공통으로 사용할 것
+        - config // 해당 어플리케이션의 설정 파일
+        - domain1
+            - Domain1 (required)
+            - Domain1Controller (required)
+            - Domain1ControllerAdvice (required)
+            - Domain1Service (required)
+            - Domain1Repository (required)
+            - Domain1Dto (required)
+            - Domain1Mapper (required)
+            - Domain1Aspect (optionally)
+            - exceptions (optionally)
+                - Domain~~Exception
+                - ...
+            - and so on...
+    - resources
+        - application.yml // 공통 환경 설정 파일
+        - application-local.yml // 로컬 환경 설정 파일
+        - application-prod.yml // 프로덕션 환경 설정 파일
+        - application-test.yml // 테스트 환경 설정 파
 - test
     - common // 테스트에 필요한 공통적인 기능
     - domain1
 
 \* 폴더는 소문자 파일은 대문자
 
+\* 환경 설정 https://cheese10yun.github.io/spring-jpa-best-11/
 ## Web
 - WebMvc
 ![webMvc](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=http%3A%2F%2Fcfile8.uf.tistory.com%2Fimage%2F99AB22345C03AB4C1D9630)
@@ -50,7 +57,7 @@
 
 단순 반복 작업을 편하게 만들어줌.
 
-## querydsl
+## Querydsl
 ```groovy
 dependencies {
     compile("com.querydsl:querydsl-core")
@@ -65,9 +72,23 @@ dependencies {
 
 참고: https://kimyhcj.tistory.com/356
 
-## lombok
+## Lombok
 
 https://www.projectlombok.org/features/all
+
+## Security
+
+Authentication(인증)
+- role-based
+    - ADMIN
+    - USER
+
+Authorization(인가)
+- AOP
+- Expression-Based Access Control
+- Method Security
+
+PasswordEncoder
 
 ## Test
 - 테스트에서 lombok을 사용해야하기 때문에 추가
@@ -85,9 +106,9 @@ https://www.projectlombok.org/features/all
 
 
 
-## rest docs
+## REST docs
 
-## actuator
+## Actuator
 
 애플리케이션 상태를 종합적으로 모니터링할 수 있는 플러그인
 

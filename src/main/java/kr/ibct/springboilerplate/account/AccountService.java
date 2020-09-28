@@ -2,25 +2,22 @@ package kr.ibct.springboilerplate.account;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import javax.transaction.Transactional;
 import kr.ibct.springboilerplate.account.AccountDto.EmailAndPassword;
 import kr.ibct.springboilerplate.account.exceptions.AccountExistException;
 import kr.ibct.springboilerplate.account.exceptions.AccountIdNotFoundException;
-import kr.ibct.springboilerplate.jwt.JwtDto;
 import kr.ibct.springboilerplate.jwt.JwtDto.AccessTokenAndRefreshToken;
 import kr.ibct.springboilerplate.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -62,15 +59,6 @@ public class AccountService implements UserDetailsService {
     }
 
 
-    public void updateAccount(Long id, AccountDto.UpdateRequest request) {
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new AccountIdNotFoundException(id.toString()));
-        AccountMapper.INSTANCE.updateRequestToAccount(request, account);
-        account.setPassword(this.passwordEncoder.encode(account.getPassword()));
-        account.setUpdated(LocalDateTime.now());
-        accountRepository.save(account);
-    }
-
     public void deleteAccount(Long id) {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new AccountIdNotFoundException(id.toString()));
@@ -109,5 +97,15 @@ public class AccountService implements UserDetailsService {
                 new UsernamePasswordAuthenticationToken(emailAndPassword.getEmail(), emailAndPassword.getPassword())
         );
         return jwtTokenProvider.generateAccessToken(authentication);
+    }
+
+    public void patchAccount(AccountDto.PatchRequest patchRequest, Account account) {
+        AccountMapper.INSTANCE.patchRequestToAccount(patchRequest, account);
+        accountRepository.save(account);
+    }
+
+    public void putAccount(AccountDto.PutRequest putRequest, Account account) {
+        AccountMapper.INSTANCE.putRequestToAccount(putRequest, account);
+        accountRepository.save(account);
     }
 }

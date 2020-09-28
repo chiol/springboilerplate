@@ -8,41 +8,70 @@
 :sectlinks:
 :sectanchors:
 
-[[api]]
+[[resources]]
+= Account
+
+[[resources-accounts]]
 == Account Api
-api 에 관련된 설명을 이곳에 적습니다.
-====
-include::{snippets}/signUp/curl-request.adoc[]
-include::{snippets}/signUp/http-request.adoc[]
-include::{snippets}/signUp/http-response.adoc[]
-include::{snippets}/signUp/httpie-request.adoc[]
-include::{snippets}/signUp/request-body.adoc[]
-include::{snippets}/signUp/response-body.adoc[]
-====
 
-====
-include::{snippets}/get/curl-request.adoc[]
-include::{snippets}/get/http-request.adoc[]
-include::{snippets}/get/http-response.adoc[]
-include::{snippets}/get/httpie-request.adoc[]
-include::{snippets}/get/request-body.adoc[]
-include::{snippets}/get/response-body.adoc[]
-====
+[[resources-accounts-signUp]]
+=== 계정 생성
+`POST` 요청을 사용하여 계정을 생성한.
 
-====
-include::{snippets}/update/curl-request.adoc[]
-include::{snippets}/update/http-request.adoc[]
-include::{snippets}/update/http-response.adoc[]
-include::{snippets}/update/httpie-request.adoc[]
-include::{snippets}/update/request-body.adoc[]
-include::{snippets}/update/response-body.adoc[]
-====
+operation::signUp[snippets='http-request,http-response']
 
-====
-include::{snippets}/delete/curl-request.adoc[]
-include::{snippets}/delete/http-request.adoc[]
-include::{snippets}/delete/http-response.adoc[]
-include::{snippets}/delete/httpie-request.adoc[]
-include::{snippets}/delete/request-body.adoc[]
-include::{snippets}/delete/response-body.adoc[]
-====
+[[resources-accounts-get]]
+=== 계정 조회
+`GET` 요청을 사용하여 계정을 조회 한다.
+
+operation::user/get[snippets='http-request,http-response']
+
+
+
+[[resources-accounts-put]]
+=== 계정 전체 수정
+`PUT` 요청을 사용하여 계정 전체를 업데이트 한다.
+
+operation::user/put[snippets='http-request,http-response']
+
+
+[[resources-accounts-patch]]
+=== 계정 일부 수정
+`PATCH` 요청을 사용하여 계정 일부를 업데이트 한다.
+
+- account.address
+- account.username
+- account.phoneNum
+
+operation::user/patch[snippets='http-request,http-response']
+
+
+
+
+[[resources-accounts-delete]]
+=== 계정 업데이트
+`DELETE` 요청을 사용하여 계정을 삭제한다
+
+operation::user/delete[snippets='http-request,http-response']
+
+
+[[resources-token]]
+== 토큰
+만료기간
+|===
+|accesssToken | refreshToken
+
+|7일
+|30일
+|===
+
+
+=== 토큰 생성
+`POST` 요청을 사용하여 accessToken을 생성한다.
+
+operation::user/token[snippets='http-request,http-response']
+
+=== refresh 토큰을 이용한 access 토큰 생성
+`POST` 요청을 사용하여 refresh 토큰을 payload에 담아 요청을 할 경우 accessToken을 재발급 받을 수 있다.
+
+operation::user/givenRefreshToken[snippets='http-request,http-response']

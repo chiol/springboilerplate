@@ -1,11 +1,13 @@
 package kr.ibct.springboilerplate.account;
 
 
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
+import kr.ibct.springboilerplate.account.exceptions.AccountPutNullException;
+import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(
+        unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
 public interface AccountMapper {
 
     AccountMapper INSTANCE = Mappers.getMapper(AccountMapper.class);
@@ -14,5 +16,13 @@ public interface AccountMapper {
 
     AccountDto.GetResponse toAccountResponse(Account account);
 
-    void updateRequestToAccount(AccountDto.UpdateRequest request, @MappingTarget Account account);
+    @Mapping(target = "phoneNum", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "address", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "username", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void patchRequestToAccount(AccountDto.PatchRequest from, @MappingTarget Account to);
+
+    @Mapping(target = "phoneNum", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_DEFAULT)
+    @Mapping(target = "address", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_DEFAULT)
+    @Mapping(target = "username", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_DEFAULT)
+    void putRequestToAccount(AccountDto.PutRequest from, @MappingTarget Account to) throws AccountPutNullException;
 }

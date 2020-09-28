@@ -7,6 +7,8 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
+
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import kr.ibct.springboilerplate.account.AccountAdapter;
@@ -33,7 +35,8 @@ public class JwtTokenProvider {
     public String generateAccessToken(Authentication authentication) {
         AccountAdapter accountAdapter = (AccountAdapter) authentication.getPrincipal();
 
-        Date now = new Date();
+        Date now = new Date(System.currentTimeMillis());
+
         Date expired = addDay(now,accessTokenExpiresInDay);
         return Jwts.builder()
                 .setSubject(Long.toString(accountAdapter.getAccount().getId()))
@@ -85,11 +88,4 @@ public class JwtTokenProvider {
         return c.getTime();
     }
 
-    public int getAccessTokenExpiresInDay() {
-        return accessTokenExpiresInDay;
-    }
-
-    public int getRefreshTokenExpiresInDay() {
-        return refreshTokenExpiresInDay;
-    }
 }

@@ -2,15 +2,9 @@ package kr.ibct.springboilerplate.account;
 
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,10 +33,15 @@ public class Account {
 
     private String password;
 
+    private String phoneNum;
+    private String address;
+    private String username;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private Set<AccountRole> roles;
 
     private LocalDateTime created;
     private LocalDateTime updated;
+    private boolean isDeleted;
 }
