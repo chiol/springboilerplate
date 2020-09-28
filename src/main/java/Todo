@@ -1,14 +1,6 @@
-Todo rest docs 제대로 구현
-
-Todo resource or event 구현
-
 Todo keycloak
  - refresh token
 
 Todo authorization
  - 관리자 api와 클라이언트 api를 분리?
  - aop? security filter? preAuthorization?
-
-Todo refresh Token [v]
-
-Todo openjdk 1.8 확인 [v]
