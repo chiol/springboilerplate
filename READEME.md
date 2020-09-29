@@ -43,11 +43,12 @@
 
 \* 환경 설정 https://cheese10yun.github.io/spring-jpa-best-11/
 ## Web
-- WebMvc
+- WebMvc using servlet
+
 ![webMvc](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=http%3A%2F%2Fcfile8.uf.tistory.com%2Fimage%2F99AB22345C03AB4C1D9630)
 
 - flow
-    - controller <--(DTO)--> service <--(DTO)--> repository <--(Entity)--> DB
+    - client <--(DTO)--> controller <--(DTO)--> service <--(DTO)--> repository <--(Entity)--> DB
 
 ## Data-JPA
 - JPA (Java Persistence API) 
@@ -68,6 +69,8 @@ dependencies {
     annotationProcessor("jakarta.annotation:jakarta.annotation-api") // java.lang.NoClassDefFoundError (javax.annotation.Generated) 발생 대응 
 }
 ```
+쿼리문을 자바 코드로 작성할 수 있음.
+
 쿼리문의 컴파일 단계에서 잡을 수 있음. 
 
 참고: https://kimyhcj.tistory.com/356
@@ -86,22 +89,25 @@ Authentication(인증)
 Authorization(인가)
 - AOP
 ```java
+// 1. Annotation 생성
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface AccessCheck {
 
 }
 
+// 2. AOP 클래스 생성
 @Aspect
 @Component
 public class AccountAspect {
-
+    
+    // 3. Pointcut 설정
     @Pointcut("@annotation(kr.ibct.springboilerplate.account.AccessCheck)")
     private void AccessCheck() {
     }
 
 
-    // Controller 의 파라미터 중 Long 타입과 @CurrentUser 의 Account 타입을 확인하여 해당 리소스에 접근할수 있는지(인가)를 확인한다.
+    // 4. Before, After, Around 등 pointcut에 시점에 해당하는 메소드 작성
     @Before("AccessCheck()")
     public Object doAccessCheck(JoinPoint joinPoint) {
         // ...
@@ -112,26 +118,82 @@ public class AccountAspect {
 @RestController
 @RequestMapping("/api/v1/users")
 public class AccountController {
-        @GetMapping("/{id}")
+
+        // 5. Annotation 추
         @AccessCheck
+        @GetMapping("/{id}")
         public ResponseEntity<?> getAccount(@PathVariable Long id, @CurrentUser Account account) {
             return ResponseEntity.ok(accountService.getAccount(id));
         }
 }
 ```
+
 - Expression-Based Access Control
 ```java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
+    @Bean
+    public AccountSecurity accountSecurity() {
+        return new AccountSecurity();
+    }
+
+    // 해당 요청에 SpEL을 통해 조건식을 만든다.
+    @Override
+    protected void configure(HttpSecurity http) {
+        http.authorizeRequests()
+            .antMatchers(HttpMethod.DELETE, "/api/v1/users/{userId}")
+                .access("hasRole('ADMIN') or @accountSecurity.check(authentication, #userId)"); 
+    }
+}
+
+public class AccountSecurity {
+    public boolean check(Authentication authentication, Long userId) {
+        if (authentication.getPrincipal().equals("anonymousUser")) {
+            return false;
+        }
+        AccountAdapter principal = (AccountAdapter) authentication.getPrincipal();
+        Account account = principal.getAccount();
+        return account.getId().equals(userId);
+    }
+}
 ```
+
 - Method Security
 ```java
+@Configuration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(
+        prePostEnabled = true //prePostEnabled를 true 설정한다.
+)
+public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+    // ...
+}
 
+@RestController
+@RequestMapping("/api/v1/users")
+public class AccountController {
+
+
+    // 해당 메소드에 SpEL을 통해 조건식을 만든다.
+    @PatchMapping("/{id}")
+    @PreAuthorize("(hasRole('USER') and #id == #account.id) or hasRole('ADMIN')")
+    public ResponseEntity<?> patchAccount(@PathVariable Long id,
+                                          @Valid @RequestBody AccountDto.PatchRequest patchRequest,
+                                          @CurrentUser Account account,
+                                          BindingResult errors) {
+        if (errors.hasErrors()) {
+            return ResponseEntity.badRequest().body(errors);
+        }
+        accountService.patchAccount(patchRequest, account);
+        return ResponseEntity.ok().body(new ApiResponse(true, "id " + id + "의 정보를 업데이트 했습니다."));
+    }
+}
 ```
-PasswordEncoder
 
 ## Test
 - 테스트에서 lombok을 사용해야하기 때문에 추가
-
 - 유닛 테스트
 - 테스트를 추가할 때 BaseTest 클래스 상속 (기본 세팅을 위해)
 ```java
@@ -145,9 +207,9 @@ public class BaseTest {
 
 참고 https://github.com/keesun/study/blob/master/rest-api-with-spring/src/test/java/me/whiteship/demoinfleanrestapi/common/BaseTest.java
 
-
-
 ## REST docs
+
+테스트를 통해 자동으로 docs 생
 
 ## Actuator
 
