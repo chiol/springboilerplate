@@ -1,10 +1,5 @@
 package kr.ibct.springboilerplate.account;
 
-import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.on;
-
-import java.net.URI;
-import java.util.List;
-import javax.validation.Valid;
 import kr.ibct.springboilerplate.account.AccountDto.EmailAndPassword;
 import kr.ibct.springboilerplate.account.AccountDto.GrantType;
 import kr.ibct.springboilerplate.common.ApiResponse;
@@ -20,6 +15,12 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import javax.validation.Valid;
+import java.net.URI;
+import java.util.List;
+
+import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.on;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -37,7 +38,7 @@ public class AccountController {
 
     @PostMapping
     public ResponseEntity<?> signUp(@Valid @RequestBody AccountDto.SignUpRequest signUpRequest,
-            BindingResult errors) {
+                                    BindingResult errors) {
 
         if (errors.hasErrors()) {
             return ResponseEntity.badRequest().body(errors);
@@ -62,7 +63,7 @@ public class AccountController {
 
     @PostMapping("/token")
     public ResponseEntity<?> signIn(@RequestBody @Valid AccountDto.SignInRequest request,
-            BindingResult errors) {
+                                    BindingResult errors) {
         if (errors.hasErrors()) {
             return ResponseEntity.badRequest().body(errors);
         }
@@ -72,8 +73,8 @@ public class AccountController {
                 throw new RuntimeException("do not have refresh token");
             }
             String accessToken = accountService.provideToken(
-                            new EmailAndPassword(request.getEmail(), request.getPassword()),
-                            request.getRefreshToken());
+                    new EmailAndPassword(request.getEmail(), request.getPassword()),
+                    request.getRefreshToken());
             // Todo JwtResponse 에 설정값 주입
             return ResponseEntity.ok(new JwtTokenResponse(
                     accessToken,
@@ -84,8 +85,8 @@ public class AccountController {
         }
 
         AccessTokenAndRefreshToken tokens = accountService.provideToken(
-                        new EmailAndPassword(request.getEmail(), request.getPassword())
-                );
+                new EmailAndPassword(request.getEmail(), request.getPassword())
+        );
         return ResponseEntity.ok(new JwtTokenResponse(
                 tokens.getAccessToken(),
                 accessTokenExpiresInDay,
@@ -109,7 +110,7 @@ public class AccountController {
 
 
     @PatchMapping("/{id}")
-    @PreAuthorize("#id == #account.id or hasRole('ADMIN')")
+    @PreAuthorize("(hasRole('USER') and #id == #account.id) or hasRole('ADMIN')")
     public ResponseEntity<?> patchAccount(@PathVariable Long id,
                                           @Valid @RequestBody AccountDto.PatchRequest patchRequest,
                                           @CurrentUser Account account,
@@ -122,11 +123,11 @@ public class AccountController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("#id == #account.id or hasRole('ADMIN')")
+    @PreAuthorize("(hasRole('USER') and #id == #account.id) or hasRole('ADMIN')")
     public ResponseEntity<?> putAccount(@PathVariable Long id,
-                                          @Valid @RequestBody AccountDto.PutRequest putRequest,
-                                          @CurrentUser Account account,
-                                          BindingResult errors) {
+                                        @Valid @RequestBody AccountDto.PutRequest putRequest,
+                                        @CurrentUser Account account,
+                                        BindingResult errors) {
         if (errors.hasErrors()) {
             return ResponseEntity.badRequest().body(errors);
         }

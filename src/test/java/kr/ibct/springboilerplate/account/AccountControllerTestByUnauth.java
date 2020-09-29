@@ -1,5 +1,16 @@
 package kr.ibct.springboilerplate.account;
 
+import kr.ibct.springboilerplate.common.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
+
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -7,38 +18,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import kr.ibct.springboilerplate.common.BaseTest;
-import kr.ibct.springboilerplate.jwt.JwtTokenProvider;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.filter.CharacterEncodingFilter;
-
 //Todo REST_DOCS 적용하기
 @ExtendWith(RestDocumentationExtension.class)
 class AccountControllerTestByUnauth extends BaseTest {
 
     String BASE_URL = "/api/v1/users";
-
-    @Autowired
-    AccountRepository accountRepository;
-
-    @Autowired
-    AccountService accountService;
-
-    @Autowired
-    AuthenticationManager authenticationManager;
-
-    @Autowired
-    JwtTokenProvider jwtTokenProvider;
-
 
     @BeforeEach
     public void setUp(WebApplicationContext webApplicationContext,
@@ -77,7 +61,7 @@ class AccountControllerTestByUnauth extends BaseTest {
         request.setEmail("not@exist.account");
         request.setPassword("password");
 
-        this.mockMvc.perform(post(BASE_URL+"/token")
+        this.mockMvc.perform(post(BASE_URL + "/token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -86,11 +70,9 @@ class AccountControllerTestByUnauth extends BaseTest {
 
     @Test
     public void testGet() throws Exception {
-        // given
-
         this.mockMvc.perform(get(BASE_URL + "/" + 1))
-                    .andDo(print())
-                    .andExpect(status().isUnauthorized());
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -100,9 +82,9 @@ class AccountControllerTestByUnauth extends BaseTest {
         request.setUsername("newUsername");
 
         this.mockMvc.perform(
-                patch(BASE_URL+"/"+1)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                patch(BASE_URL + "/" + 1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
 
@@ -117,7 +99,7 @@ class AccountControllerTestByUnauth extends BaseTest {
         request.setAddress("newAddress");
 
         this.mockMvc.perform(
-                put(BASE_URL+"/"+1)
+                put(BASE_URL + "/" + 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -129,7 +111,7 @@ class AccountControllerTestByUnauth extends BaseTest {
     public void testDelete() throws Exception {
 
         this.mockMvc.perform(
-                delete(BASE_URL+"/"+1))
+                delete(BASE_URL + "/" + 1))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
 

@@ -85,9 +85,48 @@ Authentication(인증)
 
 Authorization(인가)
 - AOP
-- Expression-Based Access Control
-- Method Security
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface AccessCheck {
 
+}
+
+@Aspect
+@Component
+public class AccountAspect {
+
+    @Pointcut("@annotation(kr.ibct.springboilerplate.account.AccessCheck)")
+    private void AccessCheck() {
+    }
+
+
+    // Controller 의 파라미터 중 Long 타입과 @CurrentUser 의 Account 타입을 확인하여 해당 리소스에 접근할수 있는지(인가)를 확인한다.
+    @Before("AccessCheck()")
+    public Object doAccessCheck(JoinPoint joinPoint) {
+        // ...
+    }
+
+}
+
+@RestController
+@RequestMapping("/api/v1/users")
+public class AccountController {
+        @GetMapping("/{id}")
+        @AccessCheck
+        public ResponseEntity<?> getAccount(@PathVariable Long id, @CurrentUser Account account) {
+            return ResponseEntity.ok(accountService.getAccount(id));
+        }
+}
+```
+- Expression-Based Access Control
+```java
+
+```
+- Method Security
+```java
+
+```
 PasswordEncoder
 
 ## Test
@@ -100,6 +139,8 @@ PasswordEncoder
 @AutoConfigureMockMvc // Mvc를 모킹으로 만들기 위한 설정
 @ActiveProfiles("test") // application.yml 설정 중 test profile을 사용
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class) // 테스트의 순서를 위해 사용
+public class BaseTest {
+}
 ```
 
 참고 https://github.com/keesun/study/blob/master/rest-api-with-spring/src/test/java/me/whiteship/demoinfleanrestapi/common/BaseTest.java

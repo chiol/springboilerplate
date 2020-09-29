@@ -1,22 +1,14 @@
 package kr.ibct.springboilerplate.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
-
-import java.time.LocalDateTime;
-import java.util.Calendar;
-import java.util.Date;
+import io.jsonwebtoken.*;
 import kr.ibct.springboilerplate.account.AccountAdapter;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+
+import java.util.Calendar;
+import java.util.Date;
 
 @Component
 @Slf4j
@@ -35,29 +27,30 @@ public class JwtTokenProvider {
     public String generateAccessToken(Authentication authentication) {
         AccountAdapter accountAdapter = (AccountAdapter) authentication.getPrincipal();
 
+        // Todo accessToken이 바로 다시 생성하면 변경되지 않음.
         Date now = new Date(System.currentTimeMillis());
+        Date expired = addDay(now, accessTokenExpiresInDay);
 
-        Date expired = addDay(now,accessTokenExpiresInDay);
         return Jwts.builder()
                 .setSubject(Long.toString(accountAdapter.getAccount().getId()))
                 .setIssuedAt(now)
                 .setExpiration(expired)
                 .signWith(SignatureAlgorithm.HS512, jwtSecretKey).compact();
     }
-
 
 
     public String generateRefreshToken(Authentication authentication) {
         AccountAdapter accountAdapter = (AccountAdapter) authentication.getPrincipal();
 
         Date now = new Date();
-        Date expired = addDay(now,refreshTokenExpiresInDay);
+        Date expired = addDay(now, refreshTokenExpiresInDay);
         return Jwts.builder()
                 .setSubject(Long.toString(accountAdapter.getAccount().getId()))
                 .setIssuedAt(now)
                 .setExpiration(expired)
                 .signWith(SignatureAlgorithm.HS512, jwtSecretKey).compact();
     }
+
     public boolean validateToken(String token) {
         try {
             Jwts.parser().setSigningKey(jwtSecretKey).parseClaimsJws(token);

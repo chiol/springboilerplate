@@ -14,7 +14,8 @@ import java.time.LocalDateTime;
 @Getter
 public class Book {
 
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String title;
     private LocalDateTime created;

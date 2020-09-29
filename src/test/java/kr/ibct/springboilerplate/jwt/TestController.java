@@ -13,6 +13,7 @@ public class TestController {
     public ResponseEntity<?> test() {
         return ResponseEntity.ok("testOk");
     }
+
     @GetMapping("/auth")
     public ResponseEntity<?> testAuth(@CurrentUser Account account) {
         return ResponseEntity.ok("testOk");

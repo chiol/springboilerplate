@@ -3,12 +3,12 @@ package kr.ibct.springboilerplate.account;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class AccountMapperTest {
 
     String testEmail = "test@test.com";
     String testPassword = "testPassword";
+
     @Test
     public void mappingTest() {
 

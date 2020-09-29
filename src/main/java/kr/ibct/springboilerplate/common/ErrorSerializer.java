@@ -3,9 +3,10 @@ package kr.ibct.springboilerplate.common;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import java.io.IOException;
 import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.validation.Errors;
+
+import java.io.IOException;
 
 @JsonComponent
 public class ErrorSerializer extends JsonSerializer<Errors> {

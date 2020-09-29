@@ -1,6 +1,5 @@
 package kr.ibct.springboilerplate.config;
 
-import java.util.Set;
 import kr.ibct.springboilerplate.account.Account;
 import kr.ibct.springboilerplate.account.AccountRole;
 import kr.ibct.springboilerplate.account.AccountService;
@@ -11,6 +10,8 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+
+import java.util.Set;
 
 @Configuration
 @EnableAspectJAutoProxy
@@ -32,7 +33,7 @@ public class AppConfig {
             AccountService accountService;
 
             @Override
-            public void run(ApplicationArguments args) throws Exception {
+            public void run(ApplicationArguments args) {
                 Account admin = Account.builder()
                         .email(adminEmail)
                         .password(adminPassword)

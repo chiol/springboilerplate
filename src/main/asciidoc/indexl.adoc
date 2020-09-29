@@ -16,27 +16,28 @@
 
 [[resources-accounts-signUp]]
 === 계정 생성
+
 `POST` 요청을 사용하여 계정을 생성한.
 
 operation::signUp[snippets='http-request,http-response']
 
 [[resources-accounts-get]]
 === 계정 조회
+
 `GET` 요청을 사용하여 계정을 조회 한다.
 
 operation::user/get[snippets='http-request,http-response']
 
-
-
 [[resources-accounts-put]]
 === 계정 전체 수정
+
 `PUT` 요청을 사용하여 계정 전체를 업데이트 한다.
 
 operation::user/put[snippets='http-request,http-response']
 
-
 [[resources-accounts-patch]]
 === 계정 일부 수정
+
 `PATCH` 요청을 사용하여 계정 일부를 업데이트 한다.
 
 - account.address
@@ -45,19 +46,18 @@ operation::user/put[snippets='http-request,http-response']
 
 operation::user/patch[snippets='http-request,http-response']
 
-
-
-
 [[resources-accounts-delete]]
 === 계정 업데이트
+
 `DELETE` 요청을 사용하여 계정을 삭제한다
 
 operation::user/delete[snippets='http-request,http-response']
 
-
 [[resources-token]]
 == 토큰
+
 만료기간
+
 |===
 |accesssToken | refreshToken
 
@@ -65,13 +65,14 @@ operation::user/delete[snippets='http-request,http-response']
 |30일
 |===
 
-
 === 토큰 생성
+
 `POST` 요청을 사용하여 accessToken을 생성한다.
 
 operation::user/token[snippets='http-request,http-response']
 
 === refresh 토큰을 이용한 access 토큰 생성
+
 `POST` 요청을 사용하여 refresh 토큰을 payload에 담아 요청을 할 경우 accessToken을 재발급 받을 수 있다.
 
 operation::user/givenRefreshToken[snippets='http-request,http-response']

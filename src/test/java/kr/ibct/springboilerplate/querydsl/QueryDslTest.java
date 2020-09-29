@@ -1,14 +1,14 @@
 package kr.ibct.springboilerplate.querydsl;
 
 
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import kr.ibct.springboilerplate.account.Account;
 import kr.ibct.springboilerplate.account.QAccount;
 import kr.ibct.springboilerplate.common.BaseTest;
 import org.junit.jupiter.api.Test;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 public class QueryDslTest extends BaseTest {
     @PersistenceContext

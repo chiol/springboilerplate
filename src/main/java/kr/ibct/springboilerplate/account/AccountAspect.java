@@ -1,7 +1,6 @@
 package kr.ibct.springboilerplate.account;
 
 import kr.ibct.springboilerplate.account.exceptions.AccountAuthorizationException;
-import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
-@Slf4j
 public class AccountAspect {
 
     @Pointcut("@annotation(kr.ibct.springboilerplate.account.AccessCheck)")
@@ -40,7 +38,7 @@ public class AccountAspect {
         }
 
         if (!account.getRoles().contains(AccountRole.ADMIN)) {
-            if (id != account.getId()) {
+            if (!id.equals(account.getId()) ) {
                 throw new AccountAuthorizationException(
                         "your account does not have authentication for " + id);
             }

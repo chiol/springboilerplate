@@ -5,7 +5,6 @@ import kr.ibct.springboilerplate.account.AccountDto.GrantType;
 import kr.ibct.springboilerplate.account.AccountDto.SignInRequest;
 import kr.ibct.springboilerplate.common.BaseTest;
 import kr.ibct.springboilerplate.jwt.JwtDto.AccessTokenAndRefreshToken;
-import kr.ibct.springboilerplate.jwt.JwtTokenProvider;
 import kr.ibct.springboilerplate.jwt.JwtTokenResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,16 +14,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import javax.security.auth.login.AccountNotFoundException;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -47,37 +42,10 @@ class AccountControllerTestByUser extends BaseTest {
     @Autowired
     AccountService accountService;
 
-    @Autowired
-    AuthenticationManager authenticationManager;
-
-    @Autowired
-    JwtTokenProvider jwtTokenProvider;
-
-    public Account createUserAccount() {
-        Account account = Account.builder()
-                .email(userEmail)
-                .password(userPassword)
-                .address("address")
-                .phoneNum("phoneNum")
-                .username("username")
-                .roles(Set.of(AccountRole.USER))
-                .build();
-        return accountService.save(account);
-    }
-
-    public String getToken() {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(userEmail, userPassword)
-        );
-        return jwtTokenProvider.generateAccessToken(authentication);
-    }
-
 
     @BeforeEach
     public void setUp(WebApplicationContext webApplicationContext,
                       RestDocumentationContextProvider restDocumentation) {
-        accountRepository.deleteAll();
-
         this.mockMvc = MockMvcBuilders
                 .webAppContextSetup(webApplicationContext)
                 .addFilters(new CharacterEncodingFilter("UTF-8", true))
@@ -114,6 +82,7 @@ class AccountControllerTestByUser extends BaseTest {
         EmailAndPassword emailAndPassword = new EmailAndPassword();
         emailAndPassword.setEmail(userEmail);
         emailAndPassword.setPassword(userPassword);
+
         AccessTokenAndRefreshToken accessTokenAndRefreshToken = accountService
                 .provideToken(emailAndPassword);
 
@@ -157,7 +126,7 @@ class AccountControllerTestByUser extends BaseTest {
     public void testGetSuccess() throws Exception {
         // given
         Account userAccount = createUserAccount();
-        String token = getToken();
+        String token = getUserAccessToken();
 
         this.mockMvc.perform(get(BASE_URL + "/" + userAccount.getId())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
@@ -171,7 +140,7 @@ class AccountControllerTestByUser extends BaseTest {
     public void testGetErrorOtherUser() throws Exception {
         // given
         Account userAccount = createUserAccount();
-        String token = getToken();
+        String token = getUserAccessToken();
 
         this.mockMvc.perform(get(BASE_URL + "/" + userAccount.getId() + 1)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
@@ -182,7 +151,7 @@ class AccountControllerTestByUser extends BaseTest {
     @Test
     public void testPutSuccess() throws Exception {
         Account userAccount = createUserAccount();
-        String token = getToken();
+        String token = getUserAccessToken();
 
         AccountDto.PutRequest request = new AccountDto.PutRequest();
         request.setAddress("newAddress");
@@ -208,7 +177,7 @@ class AccountControllerTestByUser extends BaseTest {
     @Test
     public void testPutErrorOtherUserInformation() throws Exception {
         Account userAccount = createUserAccount();
-        String token = getToken();
+        String token = getUserAccessToken();
 
         AccountDto.PutRequest request = new AccountDto.PutRequest();
         request.setAddress("newAddress");
@@ -238,7 +207,7 @@ class AccountControllerTestByUser extends BaseTest {
     @Test
     public void testPutErrorRequestBodyNull() throws Exception {
         Account userAccount = createUserAccount();
-        String token = getToken();
+        String token = getUserAccessToken();
 
         AccountDto.PutRequest request = new AccountDto.PutRequest();
         request.setAddress(null);
@@ -259,7 +228,7 @@ class AccountControllerTestByUser extends BaseTest {
     @Test
     public void testPatchSuccess() throws Exception {
         Account userAccount = createUserAccount();
-        String token = getToken();
+        String token = getUserAccessToken();
 
         AccountDto.PatchRequest request = new AccountDto.PatchRequest();
         request.setAddress("newAddress");
@@ -284,7 +253,7 @@ class AccountControllerTestByUser extends BaseTest {
     @Test
     public void testPatchErrorOtherUserRequest() throws Exception {
         Account userAccount = createUserAccount();
-        String token = getToken();
+        String token = getUserAccessToken();
 
         AccountDto.PatchRequest request = new AccountDto.PatchRequest();
         request.setAddress("newAddress");
@@ -302,7 +271,7 @@ class AccountControllerTestByUser extends BaseTest {
     @Test
     public void testDelete() throws Exception {
         Account userAccount = createUserAccount();
-        String token = getToken();
+        String token = getUserAccessToken();
 
         this.mockMvc.perform(
                 delete(BASE_URL + "/" + userAccount.getId())
@@ -312,7 +281,7 @@ class AccountControllerTestByUser extends BaseTest {
                 .andDo(document("user/delete"));
 
         userAccount = createUserAccount();
-        token = getToken();
+        token = getUserAccessToken();
         this.mockMvc.perform(
                 delete(BASE_URL + "/" + userAccount.getId() + 1)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))

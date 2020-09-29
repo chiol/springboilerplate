@@ -14,8 +14,9 @@ public class BookCommandLineRunner implements CommandLineRunner {
 
     @Autowired
     private BookRepository repository;
+
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         List<Book> books = new ArrayList<>();
         int total = 10;
         for (int i = 0; i < total; ++i) {

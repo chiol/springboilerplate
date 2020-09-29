@@ -1,6 +1,5 @@
 package kr.ibct.springboilerplate.account;
 
-import javax.servlet.http.HttpServletRequest;
 import kr.ibct.springboilerplate.account.exceptions.AccountAuthorizationException;
 import kr.ibct.springboilerplate.account.exceptions.AccountExistException;
 import kr.ibct.springboilerplate.account.exceptions.AccountIdNotFoundException;
@@ -12,6 +11,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import javax.servlet.http.HttpServletRequest;
 
 @ControllerAdvice(basePackageClasses = AccountController.class)
 public class AccountControllerAdvice extends ResponseEntityExceptionHandler {
@@ -49,8 +50,23 @@ public class AccountControllerAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler({AccountAuthorizationException.class})
     @ResponseBody
     ResponseEntity<?> handleAccountAuthorizationException(HttpServletRequest request,
-            Throwable ex) {
+                                                          Throwable ex) {
         HttpStatus status = HttpStatus.UNAUTHORIZED;
+        return ResponseEntity
+                .status(status)
+                .body(ErrorResponse.builder()
+                        .code(status.value())
+                        .message(ex.getMessage())
+                        .error(status.toString())
+                        .path(request.getRequestURI())
+                        .build()
+                );
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class})
+    @ResponseBody
+    ResponseEntity<?> handleIllegalArgumentException(HttpServletRequest request, Throwable ex) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
         return ResponseEntity
                 .status(status)
                 .body(ErrorResponse.builder()

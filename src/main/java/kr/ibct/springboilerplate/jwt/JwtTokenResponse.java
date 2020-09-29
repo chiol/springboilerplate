@@ -16,7 +16,7 @@ public class JwtTokenResponse {
     private int refreshTokenExpiresInDay;
 
     public JwtTokenResponse(String accessToken, int accessTokenExpiresInDay,
-            String refreshToken, int refreshTokenExpiresInDay) {
+                            String refreshToken, int refreshTokenExpiresInDay) {
         this.accessToken = accessToken;
         this.accessTokenExpiresInDay = accessTokenExpiresInDay;
         this.refreshToken = refreshToken;

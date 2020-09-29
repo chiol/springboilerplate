@@ -1,8 +1,5 @@
 package kr.ibct.springboilerplate.account;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
 import kr.ibct.springboilerplate.account.AccountDto.EmailAndPassword;
 import kr.ibct.springboilerplate.account.exceptions.AccountExistException;
 import kr.ibct.springboilerplate.account.exceptions.AccountIdNotFoundException;
@@ -18,6 +15,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -86,6 +87,7 @@ public class AccountService implements UserDetailsService {
         return new AccessTokenAndRefreshToken(accessToken, refreshToken);
 
     }
+
     public String provideToken(EmailAndPassword emailAndPassword, String refreshToken) {
 
         if (!jwtTokenProvider.validateToken(refreshToken)) {

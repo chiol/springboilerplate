@@ -1,9 +1,10 @@
 package kr.ibct.springboilerplate.common;
 
 
-import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 public class ErrorResponse {
