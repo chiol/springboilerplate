@@ -41,8 +41,6 @@ public class AccountService implements UserDetailsService {
         if (account.getRoles() == null) {
             account.setRoles(Set.of(AccountRole.USER));
         }
-        account.setCreated(LocalDateTime.now());
-        account.setUpdated(LocalDateTime.now());
         return this.accountRepository.save(account);
     }
 

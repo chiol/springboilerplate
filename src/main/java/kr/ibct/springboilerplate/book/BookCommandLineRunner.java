@@ -23,8 +23,6 @@ public class BookCommandLineRunner implements CommandLineRunner {
             Book book = new Book();
             int randomInt = new Random().nextInt(100);
             book.setTitle("hello" + randomInt);
-            book.setCreated(LocalDateTime.now());
-            book.setUpdated(LocalDateTime.now());
             books.add(book);
         }
         repository.saveAll(books);

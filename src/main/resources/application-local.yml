@@ -16,6 +16,8 @@ spring:
     hibernate:
       ddl-auto: create
     show-sql: true
+    properties:
+
 
 # actuator 설정
 management:

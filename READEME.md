@@ -1,4 +1,9 @@
 # Spring boilerPlate
+
+## Requirement
+- openjdk(AdoptOpenJdk) 11.0.8
+- Gradle 6.5.1
+
 ## Plugins
 - spring
     - web
@@ -34,12 +39,12 @@
         - application.yml // 공통 환경 설정 파일
         - application-local.yml // 로컬 환경 설정 파일
         - application-prod.yml // 프로덕션 환경 설정 파일
-        - application-test.yml // 테스트 환경 설정 파
+        - application-test.yml // 테스트 환경 설정 파일
 - test
     - common // 테스트에 필요한 공통적인 기능
     - domain1
 
-\* 폴더는 소문자 파일은 대문자
+\* 폴더는 소문자 파일은 대문자로 시작
 
 \* 환경 설정 https://cheese10yun.github.io/spring-jpa-best-11/
 ## Web
@@ -57,6 +62,15 @@
 ![jpa](https://gmlwjd9405.github.io/images/inflearn-jpa/implementation-of-jpa.png)
 
 단순 반복 작업을 편하게 만들어줌.
+
+- repository
+- auditing
+  - CreatedDate
+  - LastModifiedDate
+  - CreatedBy
+- dialect
+  - 여러 데이터 베이스를 자동으로 지원
+
 
 ## Querydsl
 ```groovy
@@ -78,6 +92,13 @@ dependencies {
 ## Lombok
 
 https://www.projectlombok.org/features/all
+
+## Mapstruct
+
+객체간 매핑 라이브러리
+
+https://www.baeldung.com/java-performance-mapping-frameworks
+https://meetup.toast.com/posts/213
 
 ## Security
 
@@ -130,6 +151,17 @@ public class AccountController {
 
 - Expression-Based Access Control
 ```java
+public class AccountSecurity {
+    public boolean check(Authentication authentication, Long userId) {
+        if (authentication.getPrincipal().equals("anonymousUser")) {
+            return false;
+        }
+        AccountAdapter principal = (AccountAdapter) authentication.getPrincipal();
+        Account account = principal.getAccount();
+        return account.getId().equals(userId);
+    }
+}
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
@@ -145,17 +177,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
             .antMatchers(HttpMethod.DELETE, "/api/v1/users/{userId}")
                 .access("hasRole('ADMIN') or @accountSecurity.check(authentication, #userId)"); 
-    }
-}
-
-public class AccountSecurity {
-    public boolean check(Authentication authentication, Long userId) {
-        if (authentication.getPrincipal().equals("anonymousUser")) {
-            return false;
-        }
-        AccountAdapter principal = (AccountAdapter) authentication.getPrincipal();
-        Account account = principal.getAccount();
-        return account.getId().equals(userId);
     }
 }
 ```
@@ -179,15 +200,8 @@ public class AccountController {
     // 해당 메소드에 SpEL을 통해 조건식을 만든다.
     @PatchMapping("/{id}")
     @PreAuthorize("(hasRole('USER') and #id == #account.id) or hasRole('ADMIN')")
-    public ResponseEntity<?> patchAccount(@PathVariable Long id,
-                                          @Valid @RequestBody AccountDto.PatchRequest patchRequest,
-                                          @CurrentUser Account account,
-                                          BindingResult errors) {
-        if (errors.hasErrors()) {
-            return ResponseEntity.badRequest().body(errors);
-        }
-        accountService.patchAccount(patchRequest, account);
-        return ResponseEntity.ok().body(new ApiResponse(true, "id " + id + "의 정보를 업데이트 했습니다."));
+    public ResponseEntity<?> patchAccount(...) {
+        ...
     }
 }
 ```
@@ -209,7 +223,7 @@ public class BaseTest {
 
 ## REST docs
 
-테스트를 통해 자동으로 docs 생
+테스트를 통해 자동으로 docs 생성
 
 ## Actuator
 
