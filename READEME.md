@@ -1,4 +1,4 @@
-# Spring boilerPlate
+# Spring boilerplate
 
 ## Requirement
 - openjdk(AdoptOpenJdk) 11.0.8
